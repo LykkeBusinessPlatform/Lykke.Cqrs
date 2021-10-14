@@ -23,6 +23,8 @@ namespace Lykke.Cqrs
         private readonly bool _createMissingEndpoints;
         private readonly ILogFactory _logFactory;
         private readonly ILog _log;
+        private List<Action<IDictionary<string, string>>> _readHeadersActions = new List<Action<IDictionary<string, string>>>();
+        private List<Func<IDictionary<string, string>>> _writeHeadersFuncs = new List<Func<IDictionary<string, string>>>();
 
         protected IMessagingEngine MessagingEngine { get; }
 
@@ -275,6 +277,22 @@ namespace Lykke.Cqrs
                 throw new InvalidOperationException($"Bound context '{boundedContext}' does not support event '{@event.GetType()}'");
         }
 
+        public void SetReadHeadersAction(Action<IDictionary<string, string>> action)
+        {
+            if (action != null)
+            {
+                _readHeadersActions.Add(action);
+            }
+        }
+
+        public void SetWriteHeadersFunc(Func<IDictionary<string, string>> func)
+        {
+            if (func != null)
+            {
+                _writeHeadersFuncs.Add(func);
+            }
+        }
+
         private bool SendMessage(Type type, object message, RouteType routeType, string context, uint priority, string remoteBoundedContext = null)
         {
             RouteMap routeMap = DefaultRouteMap;
@@ -289,6 +307,7 @@ namespace Lykke.Cqrs
                 type.Name,
                 context,
                 remoteBoundedContext);
+            var headers = GetMessageHeaders();
             try
             {
                 var published = routeMap.PublishMessage(
@@ -297,7 +316,8 @@ namespace Lykke.Cqrs
                     message,
                     routeType,
                     priority,
-                    remoteBoundedContext);
+                    remoteBoundedContext,
+                    headers);
                 if (!published && routeType == RouteType.Commands)
                     published = DefaultRouteMap.PublishMessage(
                         MessagingEngine,
@@ -305,7 +325,8 @@ namespace Lykke.Cqrs
                         message,
                         routeType,
                         priority,
-                        remoteBoundedContext);
+                        remoteBoundedContext,
+                        headers);
                 return published;
             }
             catch (Exception e)
@@ -319,6 +340,33 @@ namespace Lykke.Cqrs
             }
         }
 
+        private Dictionary<string, string> GetMessageHeaders()
+        {
+            var result = new Dictionary<string, string>();
+            
+            var keyValuePairs = _writeHeadersFuncs
+                .Select(x => x())
+                .Where(x => x != null && x.Any())
+                .SelectMany(x => x);
+
+            if (keyValuePairs.Any())
+            {
+                foreach (var keyValuePair in keyValuePairs)
+                {
+                    if (result.ContainsKey(keyValuePair.Key))
+                    {
+                        _log.Error($"Header with key '{keyValuePair.Key}' already exists. Discarded value is '${keyValuePair.Value}'. Please, use unique headers only.");
+                    }
+                    else
+                    {
+                        result.Add(keyValuePair.Key, keyValuePair.Value);
+                    }
+                }
+            }
+
+            return result;
+        }
+        
         private void InitRegistrations(IEnumerable<IRegistration> registrations)
         {
             foreach (var registration in registrations)
@@ -432,11 +480,19 @@ namespace Lykke.Cqrs
                         switch (route.Type)
                         {
                             case RouteType.Events:
-                                callback = (@event, acknowledge, headers) => context.EventDispatcher.Dispatch(remoteBoundedContext, new[] { Tuple.Create(@event, acknowledge) });
+                                callback = (@event, acknowledge, headers) =>
+                                {
+                                    _readHeadersActions.ForEach(x => x(headers));
+                                    context.EventDispatcher.Dispatch(remoteBoundedContext, new[] { Tuple.Create(@event, acknowledge) });
+                                };
                                 messageTypeName = "event";
                                 break;
                             case RouteType.Commands:
-                                callback = (command, acknowledge, headers) => context.CommandDispatcher.Dispatch(command, acknowledge, endpoint, routeName);
+                                callback = (command, acknowledge, headers) =>
+                                {
+                                    _readHeadersActions.ForEach(x => x(headers));
+                                    context.CommandDispatcher.Dispatch(command, acknowledge, endpoint, routeName);
+                                };
                                 messageTypeName = "command";
                                 break;
                         }
