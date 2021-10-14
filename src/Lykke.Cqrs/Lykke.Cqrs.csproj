@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Lykke.Cqrs</AssemblyName>
-    <PackageId>Lykke.Cqrs</PackageId>
+    <PackageId>LykkeBiz.Cqrs</PackageId>
     <PackageTags>Lykke Cqrs</PackageTags>
     <PackageProjectUrl>https://github.com/LykkeCity/Lykke.Cqrs</PackageProjectUrl>
     <Version>1.0.1</Version>
