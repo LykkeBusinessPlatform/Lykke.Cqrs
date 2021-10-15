@@ -1,4 +1,6 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace Lykke.Cqrs
 {
@@ -44,5 +46,9 @@ namespace Lykke.Cqrs
         /// Starts full cqrs engine - same as StartSubscribers, StartPublishers and StartProcesses called together.
         /// </summary>
         void StartAll();
+
+        void SetReadHeadersAction(Action<IDictionary<string, string>> action);
+        
+        void SetWriteHeadersFunc(Func<IDictionary<string, string>> func);
     }
 }

@@ -50,7 +50,8 @@ namespace Lykke.Cqrs
             object message,
             RouteType routeType,
             uint priority,
-            string remoteBoundedContext = null)
+            string remoteBoundedContext = null,
+            Dictionary<string, string> headers = null)
         {
             var publishDirections = (
                     from route in this
@@ -70,7 +71,7 @@ namespace Lykke.Cqrs
 
             foreach (var direction in publishDirections)
             {
-                messagingEngine.Send(message, direction.endpoint, direction.processingGroup);
+                messagingEngine.Send(message, direction.endpoint, direction.processingGroup, headers);
             }
             return true;
         }
