@@ -12,6 +12,8 @@ jobs:
   publish:
     name: Validate commit
     runs-on: ubuntu-latest
+    env:
+      ENV_INFO: "GITHUB ACTIONS"
     steps:
       - uses: actions/checkout@v2
 
