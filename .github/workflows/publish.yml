@@ -20,6 +20,6 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release "Lykke.Cqrs.sln"
       - name: Create the package
-        run: dotnet pack --configuration Release src/Lykke.Cqrs/Lykke.Cqrs.csproj /p:Version=${GITHUB_REF#refs/tags/}
+        run: dotnet pack --include-symbols --include-source --configuration Release src/Lykke.Cqrs/Lykke.Cqrs.csproj /p:Version=${GITHUB_REF#refs/tags/}
       - name: Publish the package to GPR
         run: dotnet nuget push src/Lykke.Cqrs/bin/Release/*.nupkg -s "https://api.nuget.org/v3/index.json" -k ${{ secrets.NUGET_API_KEY }} --skip-duplicate
