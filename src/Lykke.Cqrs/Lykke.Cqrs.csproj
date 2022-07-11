@@ -1,36 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <AssemblyName>Lykke.Cqrs</AssemblyName>
     <PackageId>LykkeBiz.Cqrs</PackageId>
     <PackageTags>Lykke Cqrs</PackageTags>
     <PackageProjectUrl>https://github.com/LykkeCity/Lykke.Cqrs</PackageProjectUrl>
     <Version>1.0.1</Version>
     <Authors>Lykke</Authors>
-    <Description>Lykke cqrs library</Description>
+    <Description>Lykke Cqrs library</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <NeutralLanguage>en-001</NeutralLanguage>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\Debug\netstandard2.0\Lykke.Cqrs.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\netstandard2.0\Lykke.Cqrs.xml</DocumentationFile>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Castle.Windsor" Version="4.1.0" />
+    <PackageReference Include="Castle.Windsor" Version="5.1.2" />
     <PackageReference Include="Lykke.Messaging" Version="6.3.1" />
-    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.8.1" />
-    <PackageReference Include="protobuf-net" Version="2.3.14" />
-    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.3" PrivateAssets="All" />
-    <PackageReference Include="System.Reactive.Core" Version="3.1.1" />
-    <PackageReference Include="System.Reactive.Interfaces" Version="3.1.1" />
-    <PackageReference Include="System.Reactive.PlatformServices" Version="3.1.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,9 +24,16 @@
   </ItemGroup>
 
   <ItemGroup Label="dotnet pack instructions">
-    <Content Include="$(OutputPath)$(AssemblyName).pdb">
+    <Content Include="$(OutputPath)$(AssemblyName).pdb" Condition="$(TargetFramework) == 'netstandard2.0'">
       <Pack>true</Pack>
       <PackagePath>lib/netstandard2.0</PackagePath>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup Label="dotnet pack instructions">
+    <Content Include="$(OutputPath)$(AssemblyName).pdb" Condition="$(TargetFramework) == 'netstandard2.1'">
+      <Pack>true</Pack>
+      <PackagePath>lib/netstandard2.1</PackagePath>
     </Content>
   </ItemGroup>
 

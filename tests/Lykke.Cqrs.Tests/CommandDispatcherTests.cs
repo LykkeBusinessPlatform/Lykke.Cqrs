@@ -1,7 +1,6 @@
 ﻿using System;
 using Lykke.Common.Log;
 using Lykke.Logs;
-using Lykke.Logs.Loggers.LykkeConsole;
 using Lykke.Messaging.Contract;
 using NUnit.Framework;
 
@@ -14,7 +13,7 @@ namespace Lykke.Cqrs.Tests
 
         public CommandDispatcherTests()
         {
-            _logFactory = LogFactory.Create().AddUnbufferedConsole();
+            _logFactory = LogFactory.Create();
         }
 
         public void Dispose()

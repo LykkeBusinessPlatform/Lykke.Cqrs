@@ -10,7 +10,6 @@ using Lykke.Messaging.RabbitMq;
 using Lykke.Messaging.Serialization;
 using Lykke.Cqrs.Configuration;
 using Lykke.Logs;
-using Lykke.Logs.Loggers.LykkeConsole;
 using Moq;
 using NUnit.Framework;
 
@@ -23,7 +22,7 @@ namespace Lykke.Cqrs.Tests
 
         public CqrsEngineTests()
         {
-            _logFactory = LogFactory.Create().AddUnbufferedConsole();
+            _logFactory = LogFactory.Create();
         }
 
         public void Dispose()
@@ -43,7 +42,7 @@ namespace Lykke.Cqrs.Tests
                         {"InMemory", new TransportInfo("none", "none", "none", null, "InMemory")}
                     })))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                         Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
@@ -58,7 +57,7 @@ namespace Lykke.Cqrs.Tests
                     messagingEngine.Send("test1", new Endpoint("InMemory", "exchange1", serializationFormat: SerializationFormat.Json));
                     messagingEngine.Send("test2", new Endpoint("InMemory", "exchange2", serializationFormat: SerializationFormat.Json));
                     messagingEngine.Send("test3", new Endpoint("InMemory", "exchange3", serializationFormat: SerializationFormat.Json));
-                    Thread.Sleep(7000);
+                    Thread.Sleep(10000);
 
                     Assert.That(commandHandler.HandledCommands, Is.EquivalentTo(new[] { "test1", "test2" }));
                 }
@@ -77,7 +76,7 @@ namespace Lykke.Cqrs.Tests
                         {"InMemory", new TransportInfo("none", "none", "none", null, "InMemory")}
                     })))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
@@ -117,7 +116,7 @@ namespace Lykke.Cqrs.Tests
                     }),
                 new RabbitMqTransportFactory(_logFactory)))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                     Register.DefaultEndpointResolver(
@@ -164,7 +163,7 @@ namespace Lykke.Cqrs.Tests
                     {"rmq", new TransportInfo("none", "none", "none", null, "InMemory")}
                 })))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                     endpointProvider.Object,
@@ -220,7 +219,7 @@ namespace Lykke.Cqrs.Tests
                         {"InMemory", new TransportInfo("none", "none", "none", null, "InMemory")}
                     })))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                     endpointProvider.Object,
@@ -542,7 +541,7 @@ namespace Lykke.Cqrs.Tests
                 endpointProvider.Setup(r => r.Get("route")).Returns(endpoint);
                 endpointProvider.Setup(r => r.Contains("route")).Returns(true);
 
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     new DefaultDependencyResolver(),
                     messagingEngine,
@@ -573,7 +572,7 @@ namespace Lykke.Cqrs.Tests
                 })))
             {
                 Assert.Throws<InvalidOperationException>(
-                    () => new CqrsEngine(
+                    () => new InMemoryCqrsEngine(
                         _logFactory,
                         messagingEngine,
                         Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
@@ -594,7 +593,7 @@ namespace Lykke.Cqrs.Tests
                 })))
             {
                 Assert.Throws<InvalidOperationException>(
-                    () => new CqrsEngine(
+                    () => new InMemoryCqrsEngine(
                         _logFactory,
                         messagingEngine,
                         Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
