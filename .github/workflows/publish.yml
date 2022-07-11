@@ -13,6 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
 
       - name: Build
         run: dotnet build --configuration Release "Lykke.Cqrs.sln"
@@ -21,4 +25,4 @@ jobs:
         run: dotnet pack --configuration Release src/Lykke.Cqrs/Lykke.Cqrs.csproj /p:Version=${GITHUB_REF#refs/tags/}
         
       - name: Publish the package to GPR
-        run: dotnet nuget push src/Lykke.Cqrs/bin/Release/*.nupkg -s "https://api.nuget.org/v3/index.json" -k ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push src/Lykke.Cqrs/bin/Release/*.nupkg -s "https://api.nuget.org/v3/index.json" -k ${{ secrets.NUGET_API_KEY }} --skip-duplicate
