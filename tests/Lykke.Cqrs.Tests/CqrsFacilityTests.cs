@@ -11,7 +11,6 @@ using Lykke.Messaging.Contract;
 using Lykke.Cqrs.Configuration;
 using Lykke.Cqrs.InfrastructureCommands;
 using Lykke.Logs;
-using Lykke.Logs.Loggers.LykkeConsole;
 using Moq;
 using NUnit.Framework;
 
@@ -24,7 +23,7 @@ namespace Lykke.Cqrs.Tests
 
         public CqrsFacilityTests()
         {
-            _logFactory = LogFactory.Create().AddUnbufferedConsole();
+            _logFactory = LogFactory.Create();
         }
 
         public void Dispose()

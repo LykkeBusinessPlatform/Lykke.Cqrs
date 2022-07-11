@@ -5,7 +5,6 @@ using System.Reactive.Disposables;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Common.Log;
-using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Messaging.Configuration;
 using Lykke.Messaging.Contract;
@@ -15,16 +14,15 @@ using Lykke.Cqrs.Utils;
 
 namespace Lykke.Cqrs
 {
-    [PublicAPI]
-    public class CqrsEngine : ICqrsEngine, IDisposable
+    public abstract class CqrsEngine : ICqrsEngine, IDisposable
     {
         private readonly CompositeDisposable _subscription = new CompositeDisposable();
         private readonly IEndpointProvider _endpointProvider;
         private readonly bool _createMissingEndpoints;
         private readonly ILogFactory _logFactory;
         private readonly ILog _log;
-        private List<Action<IDictionary<string, string>>> _readHeadersActions = new List<Action<IDictionary<string, string>>>();
-        private List<Func<IDictionary<string, string>>> _writeHeadersFuncs = new List<Func<IDictionary<string, string>>>();
+        private readonly List<Action<IDictionary<string, string>>> _readHeadersActions = new List<Action<IDictionary<string, string>>>();
+        private readonly List<Func<IDictionary<string, string>>> _writeHeadersFuncList = new List<Func<IDictionary<string, string>>>();
 
         protected IMessagingEngine MessagingEngine { get; }
 
@@ -38,8 +36,8 @@ namespace Lykke.Cqrs
 
         #region Obsolete ctors
 
-        [Obsolete]
-        public CqrsEngine(
+        [Obsolete("Use constructor with LogFactory instead")]
+        protected CqrsEngine(
             ILog log,
             IMessagingEngine messagingEngine,
             params IRegistration[] registrations)
@@ -53,8 +51,8 @@ namespace Lykke.Cqrs
         {
         }
 
-        [Obsolete]
-        public CqrsEngine(
+        [Obsolete("Use constructor with LogFactory instead")]
+        protected CqrsEngine(
             ILog log,
             IMessagingEngine messagingEngine,
             IEndpointProvider endpointProvider,
@@ -69,8 +67,8 @@ namespace Lykke.Cqrs
         {
         }
 
-        [Obsolete]
-        public CqrsEngine(
+        [Obsolete("Use constructor with LogFactory instead")]
+        protected CqrsEngine(
             ILog log,
             IDependencyResolver dependencyResolver,
             IMessagingEngine messagingEngine,
@@ -86,8 +84,8 @@ namespace Lykke.Cqrs
         {
         }
 
-        [Obsolete]
-        public CqrsEngine(
+        [Obsolete("Use constructor with LogFactory instead")]
+        protected CqrsEngine(
             ILog log,
             IDependencyResolver dependencyResolver,
             IMessagingEngine messagingEngine,
@@ -289,7 +287,7 @@ namespace Lykke.Cqrs
         {
             if (func != null)
             {
-                _writeHeadersFuncs.Add(func);
+                _writeHeadersFuncList.Add(func);
             }
         }
 
@@ -344,7 +342,7 @@ namespace Lykke.Cqrs
         {
             var result = new Dictionary<string, string>();
             
-            var keyValuePairs = _writeHeadersFuncs
+            var keyValuePairs = _writeHeadersFuncList
                 .Select(x => x())
                 .Where(x => x != null && x.Any())
                 .SelectMany(x => x);
@@ -436,7 +434,7 @@ namespace Lykke.Cqrs
             }
 
             if (!allEndpointsAreValid)
-                throw new ApplicationException(errorMessage.ToString());
+                throw new InvalidOperationException(errorMessage.ToString());
         }
 
         private void InitSubscriptions()

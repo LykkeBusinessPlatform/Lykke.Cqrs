@@ -8,7 +8,6 @@ using Lykke.Cqrs.Configuration;
 using Lykke.Cqrs.Middleware.Logging;
 using Lykke.Cqrs.Tests.HelperClasses;
 using Lykke.Logs;
-using Lykke.Logs.Loggers.LykkeConsole;
 using Lykke.Messaging;
 using Lykke.Messaging.Contract;
 using Lykke.Messaging.Serialization;
@@ -23,7 +22,7 @@ namespace Lykke.Cqrs.Tests
 
         public MiddlewareTests()
         {
-            _logFactory = LogFactory.Create().AddUnbufferedConsole();
+            _logFactory = LogFactory.Create();
         }
 
         public void Dispose()
@@ -43,7 +42,7 @@ namespace Lykke.Cqrs.Tests
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
                 })))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
@@ -75,7 +74,7 @@ namespace Lykke.Cqrs.Tests
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
                 })))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
@@ -111,7 +110,7 @@ namespace Lykke.Cqrs.Tests
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
                 })))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
@@ -145,7 +144,7 @@ namespace Lykke.Cqrs.Tests
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
                 })))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
@@ -156,7 +155,7 @@ namespace Lykke.Cqrs.Tests
                 {
                     engine.StartSubscribers();
                     messagingEngine.Send(1, new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
-                    Thread.Sleep(1000);
+                    Thread.Sleep(3000);
 
                     Assert.True(commandSimpleInterceptorOne.Intercepted);
                     Assert.True(commandSimpleInterceptorTwo.Intercepted);
@@ -187,7 +186,7 @@ namespace Lykke.Cqrs.Tests
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
                 })))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
@@ -222,7 +221,7 @@ namespace Lykke.Cqrs.Tests
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
                 })))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
@@ -247,42 +246,6 @@ namespace Lykke.Cqrs.Tests
         }
 
         [Test]
-        public void EventLoggingInterceptorTestForDefaultLogging()
-        {
-            var eventLoggingInterceptor = new DefaultEventLoggingInterceptor(_logFactory);
-
-            using (var messagingEngine = new MessagingEngine(
-                _logFactory,
-                new TransportResolver(new Dictionary<string, TransportInfo>
-                {
-                    {"InMemory", new TransportInfo("none", "none", "none", null)}
-                })))
-            {
-                using (var engine = new CqrsEngine(
-                    _logFactory,
-                    messagingEngine,
-                    Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
-                    Register.EventInterceptors(eventLoggingInterceptor),
-                    Register.Saga<TestSaga>("test1")
-                        .ListeningEvents(typeof(string)).From("lykke-wallet").On("lykke-wallet-events")))
-                {
-                    engine.StartSubscribers();
-                    using (var writer = new StringWriter())
-                    {
-                        var prevOut = Console.Out;
-                        Console.SetOut(writer);
-                        messagingEngine.Send("1", new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
-                        Thread.Sleep(1000);
-                        Console.SetOut(prevOut);
-
-                        var output = writer.ToString();
-                        Assert.IsFalse(output.IsNullOrEmpty(), "Event was not logged");
-                    }
-                }
-            }
-        }
-
-        [Test]
         public void EventLoggingInterceptorDoesNotBreakProcessingChain()
         {
             var eventLoggingInterceptor = new DefaultEventLoggingInterceptor(_logFactory);
@@ -295,7 +258,7 @@ namespace Lykke.Cqrs.Tests
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
                 })))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
@@ -331,7 +294,7 @@ namespace Lykke.Cqrs.Tests
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
                 })))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
@@ -368,7 +331,7 @@ namespace Lykke.Cqrs.Tests
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
                 })))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
@@ -394,44 +357,6 @@ namespace Lykke.Cqrs.Tests
         }
 
         [Test]
-        public void CommandLoggingInterceptorTestForDefaultLogging()
-        {
-            var commandLoggingInterceptor = new DefaultCommandLoggingInterceptor(_logFactory);
-            var commandsHandler = new CommandsHandler();
-
-            using (var messagingEngine = new MessagingEngine(
-                _logFactory,
-                new TransportResolver(new Dictionary<string, TransportInfo>
-                {
-                    {"InMemory", new TransportInfo("none", "none", "none", null)}
-                })))
-            {
-                using (var engine = new CqrsEngine(
-                    _logFactory,
-                    messagingEngine,
-                    Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
-                    Register.CommandInterceptors(commandLoggingInterceptor),
-                    Register.BoundedContext("test1")
-                        .ListeningCommands(typeof(int)).On("lykke-wallet-events")
-                        .WithCommandsHandler(commandsHandler)))
-                {
-                    engine.StartSubscribers();
-                    using (var writer = new StringWriter())
-                    {
-                        var prevOut = Console.Out;
-                        Console.SetOut(writer);
-                        messagingEngine.Send(1, new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
-                        Thread.Sleep(1000);
-                        Console.SetOut(prevOut);
-
-                        var output = writer.ToString();
-                        Assert.IsFalse(output.IsNullOrEmpty(), "Command was not logged");
-                    }
-                }
-            }
-        }
-
-        [Test]
         public void CommandLoggingInterceptorDoesNotBreakProcessingChain()
         {
             var commandLoggingInterceptor = new DefaultCommandLoggingInterceptor(_logFactory);
@@ -445,7 +370,7 @@ namespace Lykke.Cqrs.Tests
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
                 })))
             {
-                using (var engine = new CqrsEngine(
+                using (var engine = new InMemoryCqrsEngine(
                     _logFactory,
                     messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
