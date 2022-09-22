@@ -30,6 +30,12 @@ namespace Lykke.Cqrs.Tests
         {
             _logFactory?.Dispose();
         }
+        
+        [SetUp]
+        public void Setup()
+        {
+            Environment.SetEnvironmentVariable("ENV_INFO", "NUNIT");
+        }
 
         [Test]
         public void ComponentCanNotBeProjectionAndCommandsHandlerSimultaneousely()

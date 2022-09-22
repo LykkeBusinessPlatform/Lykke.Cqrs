@@ -1,39 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Lykke.Cqrs</AssemblyName>
     <PackageId>LykkeBiz.Cqrs</PackageId>
     <PackageTags>Lykke Cqrs</PackageTags>
-    <PackageProjectUrl>https://github.com/LykkeCity/Lykke.Cqrs</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/LykkeBusinessPlatform/Lykke.Cqrs</PackageProjectUrl>
     <Version>1.0.1</Version>
-    <Authors>Lykke</Authors>
+    <Authors>Lykke Business</Authors>
     <Description>Lykke Cqrs library</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <NeutralLanguage>en-001</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Castle.Windsor" Version="5.1.2" />
-    <PackageReference Include="Lykke.Messaging" Version="6.3.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\" />
+    <PackageReference Include="LykkeBiz.Messaging" Version="7.0.4" />
   </ItemGroup>
 
   <ItemGroup Label="dotnet pack instructions">
     <Content Include="$(OutputPath)$(AssemblyName).pdb" Condition="$(TargetFramework) == 'netstandard2.0'">
       <Pack>true</Pack>
       <PackagePath>lib/netstandard2.0</PackagePath>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup Label="dotnet pack instructions">
-    <Content Include="$(OutputPath)$(AssemblyName).pdb" Condition="$(TargetFramework) == 'netstandard2.1'">
-      <Pack>true</Pack>
-      <PackagePath>lib/netstandard2.1</PackagePath>
     </Content>
   </ItemGroup>
 

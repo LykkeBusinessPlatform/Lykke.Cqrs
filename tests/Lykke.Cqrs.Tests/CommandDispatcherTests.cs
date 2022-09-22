@@ -21,9 +21,10 @@ namespace Lykke.Cqrs.Tests
             _logFactory?.Dispose();
         }
 
-        [OneTimeSetUp]
+        [SetUp]
         public void Setup()
         {
+            Environment.SetEnvironmentVariable("ENV_INFO", "NUNIT");
         }
 
         [Test]
