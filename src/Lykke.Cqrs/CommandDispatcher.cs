@@ -5,13 +5,11 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
-using Common;
-using Common.Log;
-using Lykke.Common.Log;
 using Lykke.Messaging.Contract;
 using Lykke.Cqrs.InfrastructureCommands;
 using Lykke.Cqrs.Middleware;
 using Lykke.Cqrs.Utils;
+using Microsoft.Extensions.Logging;
 
 namespace Lykke.Cqrs
 {
@@ -19,37 +17,20 @@ namespace Lykke.Cqrs
     {
         private readonly Dictionary<Type, CommandHandlerInfo> _handlers = new Dictionary<Type, CommandHandlerInfo>();
         private readonly string _boundedContext;
-        private readonly ILog _log;
         private readonly CommandInterceptorsQueue _commandInterceptorsProcessor;
         private readonly MethodInfo _getAwaiterInfo;
         private readonly long _failedCommandRetryDelay;
+        private readonly ILogger<CommandDispatcher> _logger;
 
         internal const long FailedCommandRetryDelay = 60000;
 
-        [Obsolete]
         internal CommandDispatcher(
-            ILog log,
-            string boundedContext,
-            CommandInterceptorsQueue commandInterceptorsProcessor,
-            long failedCommandRetryDelay = FailedCommandRetryDelay)
-        {
-            _log = log;
-            _commandInterceptorsProcessor = commandInterceptorsProcessor;
-            _failedCommandRetryDelay = failedCommandRetryDelay;
-            _boundedContext = boundedContext;
-
-            var taskMethods = typeof(Task<CommandHandlingResult>).GetMethods(BindingFlags.Public | BindingFlags.Instance);
-            var awaiterResultType = typeof(TaskAwaiter<CommandHandlingResult>);
-            _getAwaiterInfo = taskMethods.First(m => m.Name == "GetAwaiter" && m.ReturnType == awaiterResultType);
-        }
-
-        internal CommandDispatcher(
-            ILogFactory logFactory,
+            ILoggerFactory loggerFactory,
             string boundedContext,
             CommandInterceptorsQueue commandInterceptorsProcessor = null,
             long failedCommandRetryDelay = 60000)
         {
-            _log = logFactory.CreateLog(this);
+            _logger = loggerFactory.CreateLogger<CommandDispatcher>();
             _commandInterceptorsProcessor = commandInterceptorsProcessor ?? new CommandInterceptorsQueue();
             _failedCommandRetryDelay = failedCommandRetryDelay;
             _boundedContext = boundedContext;
@@ -234,10 +215,10 @@ namespace Lykke.Cqrs
         {
             if (!_handlers.TryGetValue(command.GetType(), out var handlerInfo))
             {
-                _log.WriteWarning(
-                    nameof(CommandDispatcher),
-                    nameof(Dispatch),
-                    $"Failed to handle command of type {command.GetType().Name} in bound context {_boundedContext}, no handler was registered for it");
+                _logger.LogWarning(
+                    "Failed to handle command of type {CommandType} in bound context {BoundedContext}, no handler was registered for it",
+                    command.GetType().Name,
+                    _boundedContext);
                 acknowledge(_failedCommandRetryDelay, false);
                 return;
             }
@@ -259,7 +240,7 @@ namespace Lykke.Cqrs
         {
             string commandType = command?.GetType().Name ?? "Unknown command type";
 
-            var telemtryOperation = TelemetryHelper.InitTelemetryOperation(
+            var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 "Cqrs handle command",
                 commandHandlerInfo.HandlerTypeName,
                 commandType,
@@ -278,15 +259,17 @@ namespace Lykke.Cqrs
             }
             catch (Exception e)
             {
-                _log.WriteError(commandHandlerInfo.HandlerTypeName, commandType, e);
+                _logger.LogError(e, "Error in handler {HandlerName}, command type {commandType}",
+                    commandHandlerInfo.HandlerTypeName,
+                    commandType);
 
                 acknowledge(_failedCommandRetryDelay, false);
 
-                TelemetryHelper.SubmitException(telemtryOperation, e);
+                TelemetryHelper.SubmitException(telemetryOperation, e);
             }
             finally
             {
-                TelemetryHelper.SubmitOperationResult(telemtryOperation);
+                TelemetryHelper.SubmitOperationResult(telemetryOperation);
             }
         }
 

@@ -4,13 +4,12 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Common.Log;
-using Lykke.Common.Log;
 using Lykke.Messaging.Configuration;
 using Lykke.Messaging.Contract;
 using Lykke.Cqrs.Configuration;
 using Lykke.Cqrs.Middleware;
 using Lykke.Cqrs.Utils;
+using Microsoft.Extensions.Logging;
 
 namespace Lykke.Cqrs
 {
@@ -19,10 +18,15 @@ namespace Lykke.Cqrs
         private readonly CompositeDisposable _subscription = new CompositeDisposable();
         private readonly IEndpointProvider _endpointProvider;
         private readonly bool _createMissingEndpoints;
-        private readonly ILogFactory _logFactory;
-        private readonly ILog _log;
-        private readonly List<Action<IDictionary<string, string>>> _readHeadersActions = new List<Action<IDictionary<string, string>>>();
-        private readonly List<Func<IDictionary<string, string>>> _writeHeadersFuncList = new List<Func<IDictionary<string, string>>>();
+
+        private readonly List<Action<IDictionary<string, string>>> _readHeadersActions =
+            new List<Action<IDictionary<string, string>>>();
+
+        private readonly List<Func<IDictionary<string, string>>> _writeHeadersFuncList =
+            new List<Func<IDictionary<string, string>>>();
+
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger<CqrsEngine> _logger;
 
         protected IMessagingEngine MessagingEngine { get; }
 
@@ -34,87 +38,12 @@ namespace Lykke.Cqrs
 
         public RouteMap DefaultRouteMap { get; }
 
-        #region Obsolete ctors
-
-        [Obsolete("Use constructor with LogFactory instead")]
-        protected CqrsEngine(
-            ILog log,
-            IMessagingEngine messagingEngine,
-            params IRegistration[] registrations)
-            : this(
-                log,
-                new DefaultDependencyResolver(),
-                messagingEngine,
-                new DefaultEndpointProvider(),
-                false,
-                registrations)
-        {
-        }
-
-        [Obsolete("Use constructor with LogFactory instead")]
-        protected CqrsEngine(
-            ILog log,
-            IMessagingEngine messagingEngine,
-            IEndpointProvider endpointProvider,
-            params IRegistration[] registrations)
-            : this(
-                log,
-                new DefaultDependencyResolver(),
-                messagingEngine,
-                endpointProvider,
-                false,
-                registrations)
-        {
-        }
-
-        [Obsolete("Use constructor with LogFactory instead")]
-        protected CqrsEngine(
-            ILog log,
-            IDependencyResolver dependencyResolver,
-            IMessagingEngine messagingEngine,
-            IEndpointProvider endpointProvider,
-            params IRegistration[] registrations)
-            : this(
-                log,
-                dependencyResolver,
-                messagingEngine,
-                endpointProvider,
-                false,
-                registrations)
-        {
-        }
-
-        [Obsolete("Use constructor with LogFactory instead")]
-        protected CqrsEngine(
-            ILog log,
-            IDependencyResolver dependencyResolver,
-            IMessagingEngine messagingEngine,
-            IEndpointProvider endpointProvider,
-            bool createMissingEndpoints,
-            params IRegistration[] registrations)
-        {
-            _log = log;
-            _createMissingEndpoints = createMissingEndpoints;
-            DependencyResolver = dependencyResolver;
-            EndpointResolver = new DefaultEndpointResolver();
-            MessagingEngine = messagingEngine;
-            _endpointProvider = endpointProvider;
-            Contexts = new List<Context>();
-            DefaultRouteMap = new RouteMap("default");
-            CommandInterceptorsQueue = new CommandInterceptorsQueue();
-            EventInterceptorsQueue = new EventInterceptorsQueue();
-
-            InitRegistrations(registrations);
-        }
-
-        #endregion
-
         public CqrsEngine(
-            ILogFactory logFactory,
+            ILoggerFactory loggerFactory,
             IMessagingEngine messagingEngine,
             params IRegistration[] registrations)
             : this(
-                logFactory,
+                loggerFactory,
                 new DefaultDependencyResolver(),
                 messagingEngine,
                 new DefaultEndpointProvider(),
@@ -124,12 +53,12 @@ namespace Lykke.Cqrs
         }
 
         public CqrsEngine(
-            ILogFactory logFactory,
+            ILoggerFactory loggerFactory,
             IMessagingEngine messagingEngine,
             IEndpointProvider endpointProvider,
             params IRegistration[] registrations)
             : this(
-                logFactory,
+                loggerFactory,
                 new DefaultDependencyResolver(),
                 messagingEngine,
                 endpointProvider,
@@ -139,13 +68,13 @@ namespace Lykke.Cqrs
         }
 
         public CqrsEngine(
-            ILogFactory logFactory,
+            ILoggerFactory loggerFactory,
             IDependencyResolver dependencyResolver,
             IMessagingEngine messagingEngine,
             IEndpointProvider endpointProvider,
             params IRegistration[] registrations)
             : this(
-                logFactory,
+                loggerFactory,
                 dependencyResolver,
                 messagingEngine,
                 endpointProvider,
@@ -155,15 +84,15 @@ namespace Lykke.Cqrs
         }
 
         public CqrsEngine(
-            ILogFactory logFactory,
+            ILoggerFactory loggerFactory,
             IDependencyResolver dependencyResolver,
             IMessagingEngine messagingEngine,
             IEndpointProvider endpointProvider,
             bool createMissingEndpoints,
             params IRegistration[] registrations)
         {
-            _log = logFactory.CreateLog(this);
-            _logFactory = logFactory;
+            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<CqrsEngine>();
             _createMissingEndpoints = createMissingEndpoints;
             DependencyResolver = dependencyResolver;
             EndpointResolver = new DefaultEndpointResolver();
@@ -179,30 +108,19 @@ namespace Lykke.Cqrs
 
         internal CommandDispatcher CreateCommandsDispatcher(string name, long failedCommandRetryDelay)
         {
-            return _logFactory != null
-                ? new CommandDispatcher(
-                    _logFactory,
-                    name,
-                    CommandInterceptorsQueue,
-                    failedCommandRetryDelay)
-                : new CommandDispatcher(
-                    _log,
-                    name,
-                    CommandInterceptorsQueue,
-                    failedCommandRetryDelay);
+            return new CommandDispatcher(
+                _loggerFactory,
+                name,
+                CommandInterceptorsQueue,
+                failedCommandRetryDelay);
         }
 
         internal EventDispatcher CreateEventsDispatcher(string name)
         {
-            return _logFactory != null
-                ? new EventDispatcher(
-                    _logFactory,
-                    name,
-                    EventInterceptorsQueue)
-                : new EventDispatcher(
-                    _log,
-                    name,
-                    EventInterceptorsQueue);
+            return new EventDispatcher(
+                _loggerFactory,
+                name,
+                EventInterceptorsQueue);
         }
 
         public void StartPublishers()
@@ -259,11 +177,13 @@ namespace Lykke.Cqrs
 
         public void SendCommand<T>(T command, string boundedContext, string remoteBoundedContext, uint priority = 0)
         {
-            if (!SendMessage(typeof (T), command, RouteType.Commands, boundedContext, priority, remoteBoundedContext))
+            if (!SendMessage(typeof(T), command, RouteType.Commands, boundedContext, priority, remoteBoundedContext))
             {
                 if (boundedContext != null)
-                    throw new InvalidOperationException($"Bound context '{boundedContext}' does not support command '{typeof(T)}' with priority {priority}");
-                throw new InvalidOperationException($"Default route map does not contain rout for command '{typeof(T)}' with priority {priority}");
+                    throw new InvalidOperationException(
+                        $"Bound context '{boundedContext}' does not support command '{typeof(T)}' with priority {priority}");
+                throw new InvalidOperationException(
+                    $"Default route map does not contain rout for command '{typeof(T)}' with priority {priority}");
             }
         }
 
@@ -272,7 +192,8 @@ namespace Lykke.Cqrs
             if (@event == null)
                 throw new ArgumentNullException(nameof(@event));
             if (!SendMessage(@event.GetType(), @event, RouteType.Events, boundedContext, 0))
-                throw new InvalidOperationException($"Bound context '{boundedContext}' does not support event '{@event.GetType()}'");
+                throw new InvalidOperationException(
+                    $"Bound context '{boundedContext}' does not support event '{@event.GetType()}'");
         }
 
         public void SetReadHeadersAction(Action<IDictionary<string, string>> action)
@@ -291,7 +212,8 @@ namespace Lykke.Cqrs
             }
         }
 
-        private bool SendMessage(Type type, object message, RouteType routeType, string context, uint priority, string remoteBoundedContext = null)
+        private bool SendMessage(Type type, object message, RouteType routeType, string context, uint priority,
+            string remoteBoundedContext = null)
         {
             RouteMap routeMap = DefaultRouteMap;
             if (context != null)
@@ -300,6 +222,7 @@ namespace Lykke.Cqrs
                 if (routeMap == null)
                     throw new ArgumentException($"Bound context {context} not found", nameof(context));
             }
+
             var telemtryOperation = TelemetryHelper.InitTelemetryOperation(
                 routeType == RouteType.Commands ? "Cqrs send command" : "Cqrs publish event",
                 type.Name,
@@ -341,7 +264,7 @@ namespace Lykke.Cqrs
         private Dictionary<string, string> GetMessageHeaders()
         {
             var result = new Dictionary<string, string>();
-            
+
             var keyValuePairs = _writeHeadersFuncList
                 .Select(x => x())
                 .Where(x => x != null && x.Any())
@@ -353,7 +276,10 @@ namespace Lykke.Cqrs
                 {
                     if (result.ContainsKey(keyValuePair.Key))
                     {
-                        _log.Error($"Header with key '{keyValuePair.Key}' already exists. Discarded value is '${keyValuePair.Value}'. Please, use unique headers only.");
+                        _logger.LogError(
+                            "Header with key '{Key}' already exists. Discarded value is '{Value}'. Please, use unique headers only.",
+                            keyValuePair.Key,
+                            keyValuePair.Value);
                     }
                     else
                     {
@@ -364,7 +290,7 @@ namespace Lykke.Cqrs
 
             return result;
         }
-        
+
         private void InitRegistrations(IEnumerable<IRegistration> registrations)
         {
             foreach (var registration in registrations)
@@ -377,7 +303,7 @@ namespace Lykke.Cqrs
                 registration.Process(this);
             }
 
-            foreach (var routeMap in new List<RouteMap> { DefaultRouteMap }.Concat(Contexts))
+            foreach (var routeMap in new List<RouteMap> {DefaultRouteMap}.Concat(Contexts))
             {
                 foreach (var route in routeMap)
                 {
@@ -394,9 +320,12 @@ namespace Lykke.Cqrs
             var errorMessage = new StringBuilder("Some endpoints are not valid:").AppendLine();
             var endpointMessagesDict = new Dictionary<Endpoint, string>();
 
-            _log.WriteInfo(nameof(CqrsEngine), nameof(EnsureEndpoints), $"Endpoins verification for {processingCommunicationType}");
+            _logger.LogInformation(
+                "{Method}: Endpoints verification for {ProcessingCommunicationType}",
+                nameof(EnsureEndpoints),
+                processingCommunicationType);
 
-            foreach (var routeMap in new List<RouteMap> { DefaultRouteMap }.Concat(Contexts))
+            foreach (var routeMap in new List<RouteMap> {DefaultRouteMap}.Concat(Contexts))
             {
                 foreach (var route in routeMap)
                 {
@@ -418,19 +347,27 @@ namespace Lykke.Cqrs
             }
 
             var endpointsErrorsDict = MessagingEngine.VerifyEndpoints(
-                processingCommunicationType == CommunicationType.Publish ? EndpointUsage.Publish : EndpointUsage.Subscribe,
+                processingCommunicationType == CommunicationType.Publish
+                    ? EndpointUsage.Publish
+                    : EndpointUsage.Subscribe,
                 endpointMessagesDict.Keys,
                 _createMissingEndpoints);
             foreach (var endpointError in endpointsErrorsDict)
             {
                 string messagePattern = endpointMessagesDict[endpointError.Key];
                 if (string.IsNullOrWhiteSpace(endpointError.Value))
-                    _log.WriteInfo(nameof(CqrsEngine), nameof(EnsureEndpoints), string.Format(messagePattern, "OK"));
-                else
-                    _log.WriteError(
-                        nameof(CqrsEngine),
+                    _logger.LogInformation("{Method}: {Message}",
                         nameof(EnsureEndpoints),
-                        new InvalidOperationException(string.Format(messagePattern, $"ERROR: {endpointError.Value}")));
+                        string.Format(messagePattern, "OK"));
+                else
+                {
+                    var message = string.Format(messagePattern, $"ERROR: {endpointError.Value}");
+                    _logger.LogError(
+                        new InvalidOperationException(message),
+                        "{Method}: {Message}",
+                        nameof(EnsureEndpoints),
+                        message);
+                }
             }
 
             if (!allEndpointsAreValid)
@@ -481,7 +418,8 @@ namespace Lykke.Cqrs
                                 callback = (@event, acknowledge, headers) =>
                                 {
                                     _readHeadersActions.ForEach(x => x(headers));
-                                    context.EventDispatcher.Dispatch(remoteBoundedContext, new[] { Tuple.Create(@event, acknowledge) });
+                                    context.EventDispatcher.Dispatch(remoteBoundedContext,
+                                        new[] {Tuple.Create(@event, acknowledge)});
                                 };
                                 messageTypeName = "event";
                                 break;
@@ -498,9 +436,10 @@ namespace Lykke.Cqrs
                         _subscription.Add(MessagingEngine.Subscribe(
                             endpoint,
                             callback,
-                            (type, acknowledge) => throw new InvalidOperationException($"Unknown {messageTypeName} received: {type}"),
+                            (type, acknowledge) =>
+                                throw new InvalidOperationException($"Unknown {messageTypeName} received: {type}"),
                             processingGroup,
-                            (int)subscription.priority,
+                            (int) subscription.priority,
                             subscription.types));
                     }
                 }
