@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Castle.Windsor" Version="5.1.2" />
-    <PackageReference Include="LykkeBiz.Messaging" Version="8.0.0" />
+    <PackageReference Include="LykkeBiz.Messaging" Version="9.0.2" />
   </ItemGroup>
 
   <ItemGroup Label="dotnet pack instructions">
