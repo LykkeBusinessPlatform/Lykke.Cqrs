@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Lykke.Common.Log;
 using Lykke.Messaging;
 using Lykke.Messaging.Configuration;
 using Lykke.Messaging.Contract;
 using Lykke.Messaging.RabbitMq;
 using Lykke.Messaging.Serialization;
 using Lykke.Cqrs.Configuration;
-using Lykke.Logs;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
 
@@ -18,18 +18,8 @@ namespace Lykke.Cqrs.Tests
     [TestFixture]
     internal class CqrsEngineTests
     {
-        private readonly ILogFactory _logFactory;
+        private readonly ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
 
-        public CqrsEngineTests()
-        {
-            _logFactory = LogFactory.Create();
-        }
-
-        public void Dispose()
-        {
-            _logFactory?.Dispose();
-        }
-        
         [SetUp]
         public void Setup()
         {
@@ -42,15 +32,14 @@ namespace Lykke.Cqrs.Tests
             var commandHandler = new CommandsHandler();
 
             using (var messagingEngine = new MessagingEngine(
-                _logFactory,
+                _loggerFactory,
                 new TransportResolver(new Dictionary<string, TransportInfo>
                     {
                         {"InMemory", new TransportInfo("none", "none", "none", null, "InMemory")}
                     })))
             {
                 using (var engine = new InMemoryCqrsEngine(
-                    _logFactory,
-                    messagingEngine,
+                    _loggerFactory,
                         Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                         Register.BoundedContext("bc")
                            .PublishingEvents(typeof(int)).With("eventExchange")
@@ -76,15 +65,14 @@ namespace Lykke.Cqrs.Tests
             var bcCommands = new Endpoint("InMemory", "bcCommands", serializationFormat: SerializationFormat.Json);
             var defaultCommands = new Endpoint("InMemory", "defaultCommands", serializationFormat: SerializationFormat.Json);
             using (var messagingEngine = new MessagingEngine(
-                _logFactory,
+                _loggerFactory,
                 new TransportResolver(new Dictionary<string, TransportInfo>
                     {
                         {"InMemory", new TransportInfo("none", "none", "none", null, "InMemory")}
                     })))
             {
                 using (var engine = new InMemoryCqrsEngine(
-                    _logFactory,
-                    messagingEngine,
+                    _loggerFactory,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                     Register.BoundedContext("bc2")
                         .PublishingCommands(typeof(int)).To("bc1").With("bcCommands"),
@@ -115,16 +103,15 @@ namespace Lykke.Cqrs.Tests
             var commandHandler = new CustomCommandsHandler();
 
             using (var messagingEngine = new MessagingEngine(
-                _logFactory,
+                _loggerFactory,
                 new TransportResolver(new Dictionary<string, TransportInfo>
                     {
                         {"rmq", new TransportInfo("amqp://localhost/LKK", "guest", "guest", "None", "RabbitMq")}
                     }),
-                new RabbitMqTransportFactory(_logFactory)))
+                new RabbitMqTransportFactory(_loggerFactory)))
             {
                 using (var engine = new InMemoryCqrsEngine(
-                    _logFactory,
-                    messagingEngine,
+                    _loggerFactory,
                     Register.DefaultEndpointResolver(
                         new RabbitMqConventionEndpointResolver("rmq", SerializationFormat.Json, environment: "dev")),
                     Register.BoundedContext("operations")
@@ -162,7 +149,7 @@ namespace Lykke.Cqrs.Tests
             endpointProvider.Setup(r => r.Get("medium")).Returns(new Endpoint("InMemory", "medium", true, SerializationFormat.Json));
 
             using (var messagingEngine = new MessagingEngine(
-                _logFactory,
+                _loggerFactory,
                 new TransportResolver(new Dictionary<string, TransportInfo>
                 {
                     {"InMemory", new TransportInfo("none", "none", "none", null, "InMemory")},
@@ -170,9 +157,7 @@ namespace Lykke.Cqrs.Tests
                 })))
             {
                 using (var engine = new InMemoryCqrsEngine(
-                    _logFactory,
-                    messagingEngine,
-                    endpointProvider.Object,
+                    _loggerFactory,
                     Register.BoundedContext("bc")
                         .PublishingCommands(typeof(string)).To("operations").With("operationsCommandsRoute")
                         .ListeningCommands(typeof(string)).On("commandsRoute")
@@ -219,16 +204,14 @@ namespace Lykke.Cqrs.Tests
             var commandHandler = new CommandsHandler(false, 100);
 
             using (var messagingEngine = new MessagingEngine(
-                _logFactory,
+                _loggerFactory,
                 new TransportResolver(new Dictionary<string, TransportInfo>
                     {
                         {"InMemory", new TransportInfo("none", "none", "none", null, "InMemory")}
                     })))
             {
                 using (var engine = new InMemoryCqrsEngine(
-                    _logFactory,
-                    messagingEngine,
-                    endpointProvider.Object,
+                    _loggerFactory,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                     Register.BoundedContext("bc")
                         .PublishingEvents(typeof(int)).With("eventExchange")//.WithLoopback("eventQueue")
@@ -377,7 +360,7 @@ namespace Lykke.Cqrs.Tests
             var testProcess = new TestProcess();
             var commandHandler = new CommandsHandler();
             using (var engine = new InMemoryCqrsEngine(
-                _logFactory,
+                _loggerFactory,
                 Register.BoundedContext("local")
                     .ListeningCommands(typeof(string)).On("commands1").WithLoopback()
                     .PublishingEvents(typeof(int)).With("events")
@@ -535,11 +518,11 @@ namespace Lykke.Cqrs.Tests
             using (
                 var messagingEngine =
                     new MessagingEngine(
-                        _logFactory,
+                        _loggerFactory,
                         new TransportResolver(new Dictionary<string, TransportInfo>
                         {
                             {"RabbitMq", new TransportInfo("amqp://localhost", "guest", "guest", null, "RabbitMq")}
-                        }), new RabbitMqTransportFactory(_logFactory)))
+                        }), new RabbitMqTransportFactory(_loggerFactory)))
             {
                 messagingEngine.CreateTemporaryDestination("RabbitMq", null);
 
@@ -548,11 +531,8 @@ namespace Lykke.Cqrs.Tests
                 endpointProvider.Setup(r => r.Contains("route")).Returns(true);
 
                 using (var engine = new InMemoryCqrsEngine(
-                    _logFactory,
+                    _loggerFactory,
                     new DefaultDependencyResolver(),
-                    messagingEngine,
-                    endpointProvider.Object,
-                    false,
                     Register.BoundedContext("bc")
                         .ListeningEvents(typeof(DateTime)).From("other").On("route")
                         .WithProjection(handler, "other", 1, 0,
@@ -571,7 +551,7 @@ namespace Lykke.Cqrs.Tests
         public void UnhandledListenedEventsTest()
         {
             using (var messagingEngine = new MessagingEngine(
-                _logFactory,
+                _loggerFactory,
                 new TransportResolver(new Dictionary<string, TransportInfo>
                 {
                     {"InMemory", new TransportInfo("none", "none", "none", null, "InMemory")}
@@ -579,8 +559,7 @@ namespace Lykke.Cqrs.Tests
             {
                 Assert.Throws<InvalidOperationException>(
                     () => new InMemoryCqrsEngine(
-                        _logFactory,
-                        messagingEngine,
+                        _loggerFactory,
                         Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                         Register.Saga<TestSaga>("swift-cashout")
                             .ListeningEvents(GetType()).From("lykke-wallet").On("lykke-wallet-events")),
@@ -592,7 +571,7 @@ namespace Lykke.Cqrs.Tests
         public void UnhandledListenedCommandsTest()
         {
             using (var messagingEngine = new MessagingEngine(
-                _logFactory,
+                _loggerFactory,
                 new TransportResolver(new Dictionary<string, TransportInfo>
                 {
                     {"InMemory", new TransportInfo("none", "none", "none", null, "InMemory")}
@@ -600,8 +579,7 @@ namespace Lykke.Cqrs.Tests
             {
                 Assert.Throws<InvalidOperationException>(
                     () => new InMemoryCqrsEngine(
-                        _logFactory,
-                        messagingEngine,
+                        _loggerFactory,
                         Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                         Register.BoundedContext("swift-cashout")
                             .ListeningCommands(GetType()).On("lykke-wallet")),
