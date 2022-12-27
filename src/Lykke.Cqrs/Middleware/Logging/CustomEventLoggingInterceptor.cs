@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Common.Log;
 using JetBrains.Annotations;
-using Lykke.Common.Log;
 using Lykke.Cqrs.Abstractions.Middleware;
+using Microsoft.Extensions.Logging;
 
 namespace Lykke.Cqrs.Middleware.Logging
 {
@@ -19,30 +18,24 @@ namespace Lykke.Cqrs.Middleware.Logging
         private readonly IEventLogger _defaultLogger;
         private readonly Dictionary<Type, EventLoggingDelegate> _customLoggingActionsMap;
 
-        /// <summary>C-tor for old logging.</summary>
-        /// <param name="log">ILog implementation.</param>
-        /// <param name="customLoggingActionsMap">Custom logging actions map.</param>
-        [Obsolete]
-        public CustomEventLoggingInterceptor(ILog log, Dictionary<Type, EventLoggingDelegate> customLoggingActionsMap)
-            : this(new DefaultEventLogger(log), customLoggingActionsMap)
-        {
-        }
-
         /// <summary>C-tor.</summary>
-        /// <param name="logFactory">ILogFactory implementation.</param>
+        /// <param name="loggerFactory">ILogFactory implementation.</param>
         /// <param name="customLoggingActionsMap">Custom logging actions map.</param>
-        public CustomEventLoggingInterceptor(ILogFactory logFactory, Dictionary<Type, EventLoggingDelegate> customLoggingActionsMap)
-            : this(new DefaultEventLogger(logFactory), customLoggingActionsMap)
+        public CustomEventLoggingInterceptor(ILoggerFactory loggerFactory,
+            Dictionary<Type, EventLoggingDelegate> customLoggingActionsMap)
+            : this(new DefaultEventLogger(loggerFactory), customLoggingActionsMap)
         {
         }
 
         /// <summary>C-tor.</summary>
         /// <param name="defaultLogger">Event logger for default logging.</param>
         /// <param name="customLoggingActionsMap">Custom logging actions map.</param>
-        public CustomEventLoggingInterceptor(IEventLogger defaultLogger, Dictionary<Type, EventLoggingDelegate> customLoggingActionsMap)
+        public CustomEventLoggingInterceptor(IEventLogger defaultLogger,
+            Dictionary<Type, EventLoggingDelegate> customLoggingActionsMap)
         {
             _defaultLogger = defaultLogger;
-            _customLoggingActionsMap = customLoggingActionsMap ?? throw new ArgumentNullException(nameof(customLoggingActionsMap));
+            _customLoggingActionsMap = customLoggingActionsMap ??
+                                       throw new ArgumentNullException(nameof(customLoggingActionsMap));
         }
 
         /// <inheritdoc cref="IEventInterceptor"/>

@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Threading;
-using Castle.Core.Internal;
-using Lykke.Common.Log;
 using Lykke.Cqrs.Configuration;
-using Lykke.Cqrs.Middleware.Logging;
 using Lykke.Cqrs.Tests.HelperClasses;
-using Lykke.Logs;
 using Lykke.Messaging;
 using Lykke.Messaging.Contract;
 using Lykke.Messaging.Serialization;
@@ -28,7 +22,7 @@ namespace Lykke.Cqrs.Tests
             var simpleEventInterceptor = new EventSimpleInterceptor();
 
             using (var messagingEngine = new MessagingEngine(
-                _loggerFactory,
+                       _loggerFactory,
                 new TransportResolver(new Dictionary<string, TransportInfo>
                 {
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
@@ -36,6 +30,7 @@ namespace Lykke.Cqrs.Tests
             {
                 using (var engine = new InMemoryCqrsEngine(
                     _loggerFactory,
+                    messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                     Register.EventInterceptors(simpleEventInterceptor),
                     Register.Saga<TestSaga>("test1")
@@ -67,6 +62,7 @@ namespace Lykke.Cqrs.Tests
             {
                 using (var engine = new InMemoryCqrsEngine(
                     _loggerFactory,
+                    messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                     Register.EventInterceptors(simpleEventInterceptorOne),
                     Register.EventInterceptors(simpleEventInterceptorTwo),
@@ -102,6 +98,7 @@ namespace Lykke.Cqrs.Tests
             {
                 using (var engine = new InMemoryCqrsEngine(
                     _loggerFactory,
+                    messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                     Register.CommandInterceptors(commandSimpleInterceptor),
                     Register.BoundedContext("test1")
@@ -135,6 +132,7 @@ namespace Lykke.Cqrs.Tests
             {
                 using (var engine = new InMemoryCqrsEngine(
                     _loggerFactory,
+                    messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                     Register.CommandInterceptors(commandSimpleInterceptorOne, commandSimpleInterceptorTwo),
                     Register.BoundedContext("swift-cashout")
