@@ -30,6 +30,7 @@ namespace Lykke.Cqrs.Tests
             {
                 using (var engine = new InMemoryCqrsEngine(
                     _loggerFactory,
+                    messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                     Register.EventInterceptors(simpleEventInterceptor),
                     Register.Saga<TestSaga>("test1")
@@ -61,6 +62,7 @@ namespace Lykke.Cqrs.Tests
             {
                 using (var engine = new InMemoryCqrsEngine(
                     _loggerFactory,
+                    messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                     Register.EventInterceptors(simpleEventInterceptorOne),
                     Register.EventInterceptors(simpleEventInterceptorTwo),
@@ -96,6 +98,7 @@ namespace Lykke.Cqrs.Tests
             {
                 using (var engine = new InMemoryCqrsEngine(
                     _loggerFactory,
+                    messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                     Register.CommandInterceptors(commandSimpleInterceptor),
                     Register.BoundedContext("test1")
@@ -129,6 +132,7 @@ namespace Lykke.Cqrs.Tests
             {
                 using (var engine = new InMemoryCqrsEngine(
                     _loggerFactory,
+                    messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                     Register.CommandInterceptors(commandSimpleInterceptorOne, commandSimpleInterceptorTwo),
                     Register.BoundedContext("swift-cashout")
