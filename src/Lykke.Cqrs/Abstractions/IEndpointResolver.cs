@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using Lykke.Cqrs.Routing;
+﻿using Lykke.Cqrs.Routing;
 using Lykke.Messaging.Configuration;
 using Lykke.Messaging.Contract;
 
@@ -8,7 +7,6 @@ namespace Lykke.Cqrs
     /// <summary>
     /// Interface for endpoints resolving.
     /// </summary>
-    [PublicAPI]
     public interface IEndpointResolver
     {
         /// <summary>

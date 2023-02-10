@@ -1,6 +1,4 @@
 ﻿using System;
-using Lykke.Common.Log;
-using Lykke.Logs;
 using Lykke.Messaging.Contract;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;

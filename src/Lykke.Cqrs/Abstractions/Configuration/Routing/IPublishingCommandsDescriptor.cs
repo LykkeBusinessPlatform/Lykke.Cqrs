@@ -1,11 +1,8 @@
-﻿using JetBrains.Annotations;
-
-namespace Lykke.Cqrs.Configuration.Routing
+﻿namespace Lykke.Cqrs.Configuration.Routing
 {
     /// <summary>
     /// Fluent API interface for target context specification.
     /// </summary>
-    [PublicAPI]
     public interface IPublishingCommandsDescriptor<TRegistration> where TRegistration : IRegistration
     {
         /// <summary>

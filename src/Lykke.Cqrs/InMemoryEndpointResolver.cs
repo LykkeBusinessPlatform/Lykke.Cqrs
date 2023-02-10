@@ -12,12 +12,12 @@ namespace Lykke.Cqrs
             if(key.Priority == 0)
                 return new Endpoint(
                     "InMemory",
-                    /*key.LocalBoundedContext + "." + */route,
+                    new Destination(route),
                     true,
                     SerializationFormat.Json);
             return new Endpoint(
                 "InMemory",
-                /*key.LocalBoundedContext + "." + */route + "." + key.Priority,
+                new Destination(route + "." + key.Priority),
                 true,
                 SerializationFormat.Json);
         }
