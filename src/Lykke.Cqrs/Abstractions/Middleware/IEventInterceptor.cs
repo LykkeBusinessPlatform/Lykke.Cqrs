@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Lykke.Cqrs.Middleware;
 
 namespace Lykke.Cqrs.Abstractions.Middleware
@@ -7,7 +6,6 @@ namespace Lykke.Cqrs.Abstractions.Middleware
     /// <summary>
     /// Interface for cqrs events processing middleware.
     /// </summary>
-    [PublicAPI]
     public interface IEventInterceptor
     {
         /// <summary>

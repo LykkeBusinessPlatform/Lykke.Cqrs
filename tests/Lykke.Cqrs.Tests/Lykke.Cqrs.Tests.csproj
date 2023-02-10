@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>8.0</LangVersion>
     <Version>1.0.1</Version>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LykkeBiz.Messaging.RabbitMq" Version="5.0.1" />
     <PackageReference Include="LykkeBiz.Logs" Version="9.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.1" />
     <PackageReference Include="Moq" Version="4.9.0" />

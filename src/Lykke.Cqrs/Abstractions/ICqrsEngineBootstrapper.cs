@@ -1,11 +1,8 @@
-﻿using JetBrains.Annotations;
-
-namespace Lykke.Cqrs
+﻿namespace Lykke.Cqrs
 {
     /// <summary>
     /// Interface for cqrs engine bootstrapping.
     /// </summary>
-    [PublicAPI]
     public interface ICqrsEngineBootstrapper
     {
         /// <summary>

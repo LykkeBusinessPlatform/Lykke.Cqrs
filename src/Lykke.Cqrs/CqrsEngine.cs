@@ -390,8 +390,7 @@ namespace Lykke.Cqrs
                             remoteBoundedContext = r.Key.RemoteBoundedContext,
                             endpoint = new Endpoint(
                                 r.Value.TransportId,
-                                "",
-                                r.Value.Destination.Subscribe,
+                                new Destination(null, r.Value.Destination.Subscribe),
                                 r.Value.SharedDestination,
                                 r.Value.SerializationFormat)
                         })

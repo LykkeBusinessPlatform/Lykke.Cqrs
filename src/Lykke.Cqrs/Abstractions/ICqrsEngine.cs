@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 
 namespace Lykke.Cqrs
 {
     /// <summary>
     /// Interace for cqrs engine.
     /// </summary>
-    [PublicAPI]
     public interface ICqrsEngine
     {
         /// <summary>

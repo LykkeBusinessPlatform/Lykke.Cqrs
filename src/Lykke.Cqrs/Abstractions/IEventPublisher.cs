@@ -1,11 +1,8 @@
-﻿using JetBrains.Annotations;
-
-namespace Lykke.Cqrs
+﻿namespace Lykke.Cqrs
 {
     /// <summary>
     /// Interface for event publishing from bounded context.
     /// </summary>
-    [PublicAPI]
     public interface IEventPublisher
     {
         /// <summary>

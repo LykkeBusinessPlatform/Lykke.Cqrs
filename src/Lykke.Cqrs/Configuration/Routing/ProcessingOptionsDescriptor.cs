@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 
 namespace Lykke.Cqrs.Configuration.Routing
 {
     /// <summary>
     /// Processing options descriptor class.
     /// </summary>
-    [PublicAPI]
     public class ProcessingOptionsDescriptor<TRegistrtaion> : RegistrationWrapper<TRegistrtaion>, IDescriptor<IRouteMap>
         where TRegistrtaion : IRegistration
     {

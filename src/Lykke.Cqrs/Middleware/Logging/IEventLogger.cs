@@ -1,11 +1,8 @@
-﻿using JetBrains.Annotations;
-
-namespace Lykke.Cqrs.Middleware.Logging
+﻿namespace Lykke.Cqrs.Middleware.Logging
 {
     /// <summary>
     /// Inerface for event logging.
     /// </summary>
-    [PublicAPI]
     public interface IEventLogger
     {
         /// <summary>

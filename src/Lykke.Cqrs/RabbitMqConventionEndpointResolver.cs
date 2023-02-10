@@ -51,70 +51,51 @@ namespace Lykke.Cqrs
             var queueName = key.Priority == 0 ? route : route + "." + key.Priority;
             if (key.RouteType == RouteType.Commands && key.CommunicationType == CommunicationType.Subscribe)
             {
-                return new Endpoint
-                {
-                    Destination = new Destination
-                    {
-                        Publish = CreateExchangeName(
+                return new Endpoint(
+                    _transport,
+                    new Destination(
+                        CreateExchangeName(
                             $"{key.LocalContext}.{GetKewordByRoutType(key.RouteType)}.exchange/{rmqRoutingKey}"),
-                        Subscribe = CreateQueueName(
-                            $"{key.LocalContext}.queue.{GetKewordByRoutType(key.RouteType)}.{queueName}",
-                            key.Exclusive)
-                    },
-                    SerializationFormat = _serializationFormat,
-                    SharedDestination = true,
-                    TransportId = _transport
-                };
+                        CreateQueueName($"{key.LocalContext}.queue.{GetKewordByRoutType(key.RouteType)}.{queueName}",
+                            key.Exclusive)),
+                    true,
+                    _serializationFormat);
             }
 
             if (key.RouteType == RouteType.Commands && key.CommunicationType == CommunicationType.Publish)
             {
-                return new Endpoint
-                {
-                    Destination = new Destination
-                    {
-                        Publish = CreateExchangeName(
+                return new Endpoint(
+                    _transport,
+                    new Destination(
+                        CreateExchangeName(
                             $"{key.RemoteBoundedContext}.{GetKewordByRoutType(key.RouteType)}.exchange/{rmqRoutingKey}"),
-                        Subscribe = null
-                    },
-                    SerializationFormat = _serializationFormat,
-                    SharedDestination = true,
-                    TransportId = _transport
-                };
+                        null),
+                    true,
+                    _serializationFormat);
             }
 
             if (key.RouteType == RouteType.Events && key.CommunicationType == CommunicationType.Subscribe)
             {
-                return new Endpoint
-                {
-                    Destination = new Destination
-                    {
-                        Publish = CreateExchangeName(
+                return new Endpoint(_transport,
+                    new Destination(
+                        CreateExchangeName(
                             $"{key.RemoteBoundedContext}.{GetKewordByRoutType(key.RouteType)}.exchange/{key.MessageType.Name}"),
-                        Subscribe = CreateQueueName(
+                        CreateQueueName(
                             $"{key.LocalContext}.queue.{key.RemoteBoundedContext}.{GetKewordByRoutType(key.RouteType)}.{route}",
-                            key.Exclusive)
-                    },
-                    SerializationFormat = _serializationFormat,
-                    SharedDestination = true,
-                    TransportId = _transport
-                };
+                            key.Exclusive)),
+                    true,
+                    _serializationFormat);
             }
 
             if (key.RouteType == RouteType.Events && key.CommunicationType == CommunicationType.Publish)
             {
-                return new Endpoint
-                {
-                    Destination = new Destination
-                    {
-                        Publish = CreateExchangeName(
+                return new Endpoint(_transport,
+                    new Destination(
+                        CreateExchangeName(
                             $"{key.LocalContext}.{GetKewordByRoutType(key.RouteType)}.exchange/{key.MessageType.Name}"),
-                        Subscribe = null
-                    },
-                    SerializationFormat = _serializationFormat,
-                    SharedDestination = true,
-                    TransportId = _transport
-                };
+                        null),
+                    true,
+                    _serializationFormat);
             }
             return default(Endpoint);
         }
