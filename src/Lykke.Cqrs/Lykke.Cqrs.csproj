@@ -16,7 +16,7 @@
   <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Castle.Windsor" Version="5.1.2" />
-    <PackageReference Include="LykkeBiz.Messaging" Version="11.0.1" />
+    <PackageReference Include="LykkeBiz.Messaging" Version="11.0.2" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.20.0" />
   </ItemGroup>
 
