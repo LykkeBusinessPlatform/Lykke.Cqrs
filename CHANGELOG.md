@@ -1,4 +1,4 @@
-## [[tbd]] (2023-11-23)
+## 14.0.0 (2023-11-23)
 
 ### Removed
 - Downgraded to version as of 2022-09-22
