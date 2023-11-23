@@ -73,7 +73,6 @@ namespace Lykke.Cqrs.Tests
             {
                 using (var engine = new InMemoryCqrsEngine(
                     _loggerFactory,
-                    messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                     Register.BoundedContext("bc2")
                         .PublishingCommands(typeof(int)).To("bc1").With("bcCommands"),
@@ -159,7 +158,6 @@ namespace Lykke.Cqrs.Tests
             {
                 using (var engine = new InMemoryCqrsEngine(
                     _loggerFactory,
-                    messagingEngine,
                     Register.BoundedContext("bc")
                         .PublishingCommands(typeof(string)).To("operations").With("operationsCommandsRoute")
                         .ListeningCommands(typeof(string)).On("commandsRoute")
@@ -214,7 +212,6 @@ namespace Lykke.Cqrs.Tests
             {
                 using (var engine = new InMemoryCqrsEngine(
                     _loggerFactory,
-                    messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
                     Register.BoundedContext("bc")
                         .PublishingEvents(typeof(int)).With("eventExchange")//.WithLoopback("eventQueue")

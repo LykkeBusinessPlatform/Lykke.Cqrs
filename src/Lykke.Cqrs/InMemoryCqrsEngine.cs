@@ -1,28 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Lykke.Messaging;
 using Lykke.Cqrs.Configuration;
-using Lykke.Messaging.Contract;
 using Microsoft.Extensions.Logging;
 
 namespace Lykke.Cqrs
 {
     public class InMemoryCqrsEngine : CqrsEngine
     {
-        [Obsolete("Do not instantiate messaging engine outside")]
-        public InMemoryCqrsEngine(ILoggerFactory loggerFactory,
-            IMessagingEngine engine,
-            params IRegistration[] registrations)
-            : base(
-                loggerFactory,
-                engine,
-                new IRegistration[] { Register.DefaultEndpointResolver(new InMemoryEndpointResolver()) }
-                    .Concat(registrations).ToArray()
-            )
-        {
-        }
-
         public InMemoryCqrsEngine(ILoggerFactory loggerFactory, params IRegistration[] registrations)
             : base(
                 loggerFactory,
@@ -54,7 +39,7 @@ namespace Lykke.Cqrs
             base.Dispose(disposing);
             if (disposing)
             {
-                MessagingEngine?.Dispose();
+                MessagingEngine.Dispose();
             }
         }
     }
