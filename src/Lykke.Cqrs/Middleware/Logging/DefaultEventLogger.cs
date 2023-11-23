@@ -1,6 +1,7 @@
-﻿using Common;
+﻿using System;
+using Common.Log;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Logging;
+using Lykke.Common.Log;
 
 namespace Lykke.Cqrs.Middleware.Logging
 {
@@ -10,21 +11,25 @@ namespace Lykke.Cqrs.Middleware.Logging
     [PublicAPI]
     public sealed class DefaultEventLogger: IEventLogger
     {
-        private readonly ILogger _logger;
+        private readonly ILog _log;
+
+        /// <summary>C-tor for old logging.</summary>
+        [Obsolete]
+        public DefaultEventLogger(ILog log)
+        {
+            _log = log;
+        }
 
         /// <summary>C-tor.</summary>
-        public DefaultEventLogger(ILoggerFactory loggerFactory)
+        public DefaultEventLogger(ILogFactory logFactory)
         {
-            _logger = loggerFactory.CreateLogger<DefaultEventLogger>();
+            _log = logFactory.CreateLog(this);
         }
 
         /// <inheritdoc cref="IEventLogger"/>
         public void Log(object handler, object @event)
         {
-            _logger.LogInformation("[{Process}]: {Info}, {Context}", 
-                handler.GetType().Name, 
-                @event.GetType().Name,
-                @event.ToJson());
+            _log.WriteInfo(handler.GetType().Name, @event, @event.GetType().Name);
         }
     }
 }

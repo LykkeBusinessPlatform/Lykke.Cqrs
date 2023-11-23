@@ -1,7 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading;
+using Castle.Core.Internal;
+using Lykke.Common.Log;
 using Lykke.Cqrs.Configuration;
+using Lykke.Cqrs.Middleware.Logging;
 using Lykke.Cqrs.Tests.HelperClasses;
+using Lykke.Logs;
 using Lykke.Messaging;
 using Lykke.Messaging.Contract;
 using Lykke.Messaging.Serialization;
@@ -22,7 +28,7 @@ namespace Lykke.Cqrs.Tests
             var simpleEventInterceptor = new EventSimpleInterceptor();
 
             using (var messagingEngine = new MessagingEngine(
-                       _loggerFactory,
+                _loggerFactory,
                 new TransportResolver(new Dictionary<string, TransportInfo>
                 {
                     {"InMemory", new TransportInfo("none", "none", "none", null)}

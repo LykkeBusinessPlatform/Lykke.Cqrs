@@ -1,7 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Common.Log;
 using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.Cqrs.Abstractions.Middleware;
-using Microsoft.Extensions.Logging;
 
 namespace Lykke.Cqrs.Middleware.Logging
 {
@@ -13,9 +15,16 @@ namespace Lykke.Cqrs.Middleware.Logging
     {
         private readonly IEventLogger _eventLogger;
 
+        /// <summary>C-tor for old logging.</summary>
+        [Obsolete]
+        public DefaultEventLoggingInterceptor(ILog log)
+            : this(new DefaultEventLogger(log))
+        {
+        }
+
         /// <summary>C-tor.</summary>
-        public DefaultEventLoggingInterceptor(ILoggerFactory loggerFactory)
-            : this(new DefaultEventLogger(loggerFactory))
+        public DefaultEventLoggingInterceptor(ILogFactory logFactory)
+            : this(new DefaultEventLogger(logFactory))
         {
         }
 
