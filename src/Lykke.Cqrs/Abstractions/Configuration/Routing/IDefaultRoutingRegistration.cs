@@ -1,10 +1,12 @@
 using System;
+using JetBrains.Annotations;
 
 namespace Lykke.Cqrs.Configuration.Routing
 {
     /// <summary>
     /// Interface for default routing registration.
     /// </summary>
+    [PublicAPI]
     public interface IDefaultRoutingRegistration : IRegistration, IHideObjectMembers
     {
         /// <summary>

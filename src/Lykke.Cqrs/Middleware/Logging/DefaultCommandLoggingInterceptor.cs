@@ -1,19 +1,30 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Common.Log;
+using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.Cqrs.Abstractions.Middleware;
-using Microsoft.Extensions.Logging;
 
 namespace Lykke.Cqrs.Middleware.Logging
 {
     /// <summary>
     /// Default command logging interceptor.
     /// </summary>
+    [PublicAPI]
     public sealed class DefaultCommandLoggingInterceptor : ICommandInterceptor
     {
         private readonly ICommandLogger _commandLogger;
 
+        /// <summary>C-tor for old logging.</summary>
+        [Obsolete]
+        public DefaultCommandLoggingInterceptor(ILog log)
+            : this(new DefaultCommandLogger(log))
+        {
+        }
+
         /// <summary>C-tor.</summary>
-        public DefaultCommandLoggingInterceptor(ILoggerFactory loggerFactory)
-            : this(new DefaultCommandLogger(loggerFactory))
+        public DefaultCommandLoggingInterceptor(ILogFactory logFactory)
+            : this(new DefaultCommandLogger(logFactory))
         {
         }
 

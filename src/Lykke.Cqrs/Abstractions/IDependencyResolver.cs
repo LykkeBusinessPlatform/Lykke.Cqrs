@@ -1,10 +1,12 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace Lykke.Cqrs
 {
     /// <summary>
     /// Interface for dependency resolving from used components container.
     /// </summary>
+    [PublicAPI]
     public interface IDependencyResolver
     {
         /// <summary>

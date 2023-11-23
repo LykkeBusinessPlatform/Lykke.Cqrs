@@ -1,10 +1,12 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace Lykke.Cqrs
 {
     /// <summary>
     /// Interface for sending commands.
     /// </summary>
+    [PublicAPI]
     public interface ICommandSender : IDisposable
     {
         /// <summary>
@@ -14,6 +16,6 @@ namespace Lykke.Cqrs
         /// <param name="command">Command instance.</param>
         /// <param name="remoteBoundedContext">Target context.</param>
         /// <param name="priority">Command priority.</param>
-        void SendCommand<T>(T command, string remoteBoundedContext, uint priority = 0);
+        void SendCommand<T>([NotNull] T command, [NotNull] string remoteBoundedContext, uint priority = 0);
     }
 }

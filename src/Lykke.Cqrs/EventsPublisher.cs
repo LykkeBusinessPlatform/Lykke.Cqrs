@@ -1,7 +1,9 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace Lykke.Cqrs
 {
+    [PublicAPI]
     public class EventsPublisher : IEventPublisher
     {
         private readonly CqrsEngine m_CqrsEngine;

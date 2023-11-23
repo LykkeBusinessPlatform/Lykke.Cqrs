@@ -1,4 +1,5 @@
 using System;
+using JetBrains.Annotations;
 using Lykke.Cqrs.Abstractions.Middleware;
 using Lykke.Cqrs.Configuration.BoundedContext;
 using Lykke.Cqrs.Configuration.Routing;
@@ -6,6 +7,7 @@ using Lykke.Cqrs.Configuration.Saga;
 
 namespace Lykke.Cqrs.Configuration
 {
+    [PublicAPI]
     public static class Register
     {
         /// <summary>

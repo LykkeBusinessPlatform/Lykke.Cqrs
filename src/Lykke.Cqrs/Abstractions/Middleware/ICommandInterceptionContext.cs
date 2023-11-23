@@ -1,10 +1,12 @@
 ﻿using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Lykke.Cqrs.Middleware
 {
     /// <summary>
     /// Context for command processing middleware.
     /// </summary>
+    [PublicAPI]
     public interface ICommandInterceptionContext
     {
         /// <summary>Command to be processed.</summary>

@@ -1,18 +1,28 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using Lykke.Common.Log;
 using Lykke.Messaging.Contract;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Lykke.Logs;
 using NUnit.Framework;
 
 namespace Lykke.Cqrs.Tests
 {
     [TestFixture]
-    public class EventDispatcherTests
+    public class EventDispatcherTests : IDisposable
     {
-        private readonly ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
+        private readonly ILogFactory _logFactory;
 
+        public EventDispatcherTests()
+        {
+            _logFactory = LogFactory.Create();
+        }
+
+        public void Dispose()
+        {
+            _logFactory?.Dispose();
+        }
+        
         [SetUp]
         public void Setup()
         {
@@ -22,7 +32,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void WireTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             var handler = new EventHandler();
             var now = DateTime.UtcNow;
             bool ack1 = false;
@@ -43,7 +53,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void MultipleHandlersDispatchTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             var handler1 = new EventHandler();
             var handler2 = new EventHandler();
             bool ack = false;
@@ -60,7 +70,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void FailingHandlersDispatchTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             var handler1 = new EventHandler();
             var handler2 = new EventHandler(true);
             Tuple<long, bool> result = null;
@@ -79,7 +89,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void RetryingHandlersDispatchTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             var handler = new ResultEventHandler(true, 100);
             Tuple<long, bool> result = null;
 
@@ -95,7 +105,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void EventWithNoHandlerIsAcknowledgedTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             bool ack = false;
 
             dispatcher.Dispatch("testBC", "test", (delay, acknowledge) => { ack = acknowledge; });
@@ -106,7 +116,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void AsyncEventHadlerTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             var asyncHandler = new EventAsyncHandler(false);
             bool ack = false;
 
@@ -120,7 +130,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void ExceptionForAsyncEventHadlerTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             var handler = new EventAsyncHandler(true);
             int failedCount = 0;
 
@@ -138,7 +148,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void AsyncResultEventHadlerTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             var handler = new EventAsyncResultHandler(false);
             bool ack = false;
 
@@ -152,7 +162,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void ExceptionForAsyncResultEventHadlerTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             var handler = new EventAsyncResultHandler(true);
             int failedCount = 0;
 
@@ -170,7 +180,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void BatchDispatchTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             var handler = new EventHandler {FailOnce = true};
             Tuple<long, bool> result = null;
             bool ack2 = false;
@@ -194,7 +204,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void BatchDispatchWithBatchHandlerOkTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             var handler = new EventBatchHandler(false);
             bool ack1 = false;
             bool ack2 = false;
@@ -217,7 +227,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void BatchDispatchWithBatchHandlerFailTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             var handler = new EventBatchHandler(true);
             bool ack1 = true;
             bool ack2 = true;
@@ -240,7 +250,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void BatchDispatchTriggeringBySizeTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             var handler = new EventHandlerWithBatchSupport();
 
             dispatcher.Wire(
@@ -276,7 +286,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void BatchDispatchTriggeringByTimeoutTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             var handler = new EventHandlerWithBatchSupport();
 
             dispatcher.Wire(
@@ -309,7 +319,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void BatchDispatchUnackTest()
         {
-            var dispatcher = new EventDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new EventDispatcher(_logFactory, "testBC");
             var handler = new EventHandlerWithBatchSupport(1);
             Tuple<long, bool> result = null;
 
