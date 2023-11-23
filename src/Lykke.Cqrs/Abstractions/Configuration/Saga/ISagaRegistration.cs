@@ -1,4 +1,5 @@
 using System;
+using JetBrains.Annotations;
 using Lykke.Cqrs.Configuration.Routing;
 
 namespace Lykke.Cqrs.Configuration.Saga
@@ -6,6 +7,7 @@ namespace Lykke.Cqrs.Configuration.Saga
     /// <summary>
     /// Fluent API interface for saga registration.
     /// </summary>
+    [PublicAPI]
     public interface ISagaRegistration : IRegistration, IHideObjectMembers
     {
         /// <summary>

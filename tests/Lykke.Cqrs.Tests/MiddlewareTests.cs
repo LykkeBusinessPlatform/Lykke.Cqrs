@@ -23,7 +23,7 @@ namespace Lykke.Cqrs.Tests
 
             using (var messagingEngine = new MessagingEngine(
                        _loggerFactory,
-                new TransportInfoResolver(new Dictionary<string, TransportInfo>
+                new TransportResolver(new Dictionary<string, TransportInfo>
                 {
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
                 })))
@@ -37,7 +37,7 @@ namespace Lykke.Cqrs.Tests
                         .ListeningEvents(typeof(string)).From("lykke-wallet").On("lykke-wallet-events")))
                 {
                     engine.StartSubscribers();
-                    messagingEngine.Send("1", new Endpoint("InMemory", new Destination("lykke-wallet-events"), serializationFormat: SerializationFormat.Json));
+                    messagingEngine.Send("1", new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
                     Thread.Sleep(1000);
 
                     Assert.True(simpleEventInterceptor.Intercepted);
@@ -55,7 +55,7 @@ namespace Lykke.Cqrs.Tests
 
             using (var messagingEngine = new MessagingEngine(
                 _loggerFactory,
-                new TransportInfoResolver(new Dictionary<string, TransportInfo>
+                new TransportResolver(new Dictionary<string, TransportInfo>
                 {
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
                 })))
@@ -70,7 +70,7 @@ namespace Lykke.Cqrs.Tests
                         .ListeningEvents(typeof(string)).From("lykke-wallet").On("lykke-wallet-events")))
                 {
                     engine.StartSubscribers();
-                    messagingEngine.Send("2", new Endpoint("InMemory", new Destination("lykke-wallet-events"), serializationFormat: SerializationFormat.Json));
+                    messagingEngine.Send("2", new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
                     Thread.Sleep(1000);
 
                     Assert.True(simpleEventInterceptorOne.Intercepted);
@@ -91,7 +91,7 @@ namespace Lykke.Cqrs.Tests
 
             using (var messagingEngine = new MessagingEngine(
                 _loggerFactory,
-                new TransportInfoResolver(new Dictionary<string, TransportInfo>
+                new TransportResolver(new Dictionary<string, TransportInfo>
                 {
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
                 })))
@@ -106,7 +106,7 @@ namespace Lykke.Cqrs.Tests
                         .WithCommandsHandler(commandsHandler)))
                 {
                     engine.StartSubscribers();
-                    messagingEngine.Send(1, new Endpoint("InMemory", new Destination("lykke-wallet-events"), serializationFormat: SerializationFormat.Json));
+                    messagingEngine.Send(1, new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
                     Thread.Sleep(1000);
 
                     Assert.True(commandSimpleInterceptor.Intercepted);
@@ -125,7 +125,7 @@ namespace Lykke.Cqrs.Tests
 
             using (var messagingEngine = new MessagingEngine(
                 _loggerFactory,
-                new TransportInfoResolver(new Dictionary<string, TransportInfo>
+                new TransportResolver(new Dictionary<string, TransportInfo>
                 {
                     {"InMemory", new TransportInfo("none", "none", "none", null)}
                 })))
@@ -140,7 +140,7 @@ namespace Lykke.Cqrs.Tests
                         .WithCommandsHandler(commandsHandler)))
                 {
                     engine.StartSubscribers();
-                    messagingEngine.Send(1, new Endpoint("InMemory", new Destination("lykke-wallet-events"), serializationFormat: SerializationFormat.Json));
+                    messagingEngine.Send(1, new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
                     Thread.Sleep(3000);
 
                     Assert.True(commandSimpleInterceptorOne.Intercepted);

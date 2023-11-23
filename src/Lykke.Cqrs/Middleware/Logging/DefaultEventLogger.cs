@@ -1,11 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+﻿using Common;
+using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 
 namespace Lykke.Cqrs.Middleware.Logging
 {
     /// <summary>
     /// Default event logger.
     /// </summary>
+    [PublicAPI]
     public sealed class DefaultEventLogger: IEventLogger
     {
         private readonly ILogger _logger;
@@ -19,12 +21,10 @@ namespace Lykke.Cqrs.Middleware.Logging
         /// <inheritdoc cref="IEventLogger"/>
         public void Log(object handler, object @event)
         {
-            var eventJson = JsonConvert.SerializeObject(@event);
-            
             _logger.LogInformation("[{Process}]: {Info}, {Context}", 
                 handler.GetType().Name, 
                 @event.GetType().Name,
-                eventJson);
+                @event.ToJson());
         }
     }
 }

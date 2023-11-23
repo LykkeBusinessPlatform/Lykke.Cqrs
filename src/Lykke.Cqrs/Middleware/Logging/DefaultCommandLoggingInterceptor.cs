@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Lykke.Cqrs.Abstractions.Middleware;
 using Microsoft.Extensions.Logging;
 
@@ -7,6 +8,7 @@ namespace Lykke.Cqrs.Middleware.Logging
     /// <summary>
     /// Default command logging interceptor.
     /// </summary>
+    [PublicAPI]
     public sealed class DefaultCommandLoggingInterceptor : ICommandInterceptor
     {
         private readonly ICommandLogger _commandLogger;

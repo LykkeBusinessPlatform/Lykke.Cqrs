@@ -7,7 +7,7 @@ namespace Lykke.Cqrs.Utils
 {
     internal static class TelemetryHelper
     {
-        private static readonly TelemetryClient Telemetry = new TelemetryClient();
+        private static readonly TelemetryClient _telemetry = new TelemetryClient();
 
         internal static IOperationHolder<DependencyTelemetry> InitTelemetryOperation(
             string type,
@@ -15,7 +15,7 @@ namespace Lykke.Cqrs.Utils
             string name,
             string data)
         {
-            var operation = Telemetry.StartOperation<DependencyTelemetry>(name);
+            var operation = _telemetry.StartOperation<DependencyTelemetry>(name);
             operation.Telemetry.Type = type;
             operation.Telemetry.Target = target;
             operation.Telemetry.Name = name;
@@ -27,12 +27,12 @@ namespace Lykke.Cqrs.Utils
         internal static void SubmitException(IOperationHolder<DependencyTelemetry> telemtryOperation, Exception e)
         {
             telemtryOperation.Telemetry.Success = false;
-            Telemetry.TrackException(e);
+            _telemetry.TrackException(e);
         }
 
         internal static void SubmitOperationResult(IOperationHolder<DependencyTelemetry> telemtryOperation)
         {
-            Telemetry.StopOperation(telemtryOperation);
+            _telemetry.StopOperation(telemtryOperation);
         }
     }
 }

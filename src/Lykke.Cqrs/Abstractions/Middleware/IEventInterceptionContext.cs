@@ -1,10 +1,12 @@
 ﻿using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Lykke.Cqrs.Middleware
 {
     /// <summary>
     /// Context for event processing middleware.
     /// </summary>
+    [PublicAPI]
     public interface IEventInterceptionContext
     {
         /// <summary>Event to be processed.</summary>

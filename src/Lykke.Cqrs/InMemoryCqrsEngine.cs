@@ -28,7 +28,7 @@ namespace Lykke.Cqrs
                 loggerFactory,
                 new MessagingEngine(
                     loggerFactory,
-                    new TransportInfoResolver(new Dictionary<string, TransportInfo> { { "InMemory", new TransportInfo("none", "none", "none", null, "InMemory") } })),
+                    new TransportResolver(new Dictionary<string, TransportInfo> { { "InMemory", new TransportInfo("none", "none", "none", null, "InMemory") } })),
                 new IRegistration[]{Register.DefaultEndpointResolver(new InMemoryEndpointResolver())}.Concat(registrations).ToArray()
             )
         {
@@ -42,7 +42,7 @@ namespace Lykke.Cqrs
                 dependencyResolver,
                 new MessagingEngine(
                     loggerFactory,
-                    new TransportInfoResolver(new Dictionary<string, TransportInfo> { { "InMemory", new TransportInfo("none", "none", "none", null, "InMemory") } })),
+                    new TransportResolver(new Dictionary<string, TransportInfo> { { "InMemory", new TransportInfo("none", "none", "none", null, "InMemory") } })),
                 new DefaultEndpointProvider(),
                 new  IRegistration[]{Register.DefaultEndpointResolver(new InMemoryEndpointResolver())}.Concat(registrations).ToArray()
             )

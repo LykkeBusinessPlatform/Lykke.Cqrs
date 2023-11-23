@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using Lykke.Cqrs.Routing;
 
 namespace Lykke.Cqrs
@@ -6,6 +7,7 @@ namespace Lykke.Cqrs
     /// <summary>
     /// Interface for routes mapping collection.
     /// </summary>
+    [PublicAPI]
     public interface IRouteMap : IEnumerable<Route>
     {
         /// <summary>

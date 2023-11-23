@@ -1,10 +1,12 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace Lykke.Cqrs
 {
     /// <summary>
     /// Interface for cqrs process.
     /// </summary>
+    [PublicAPI]
     public interface IProcess : IDisposable
     {
         /// <summary>

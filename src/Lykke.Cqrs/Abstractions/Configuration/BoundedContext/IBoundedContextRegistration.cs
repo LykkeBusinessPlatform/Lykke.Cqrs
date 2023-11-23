@@ -1,4 +1,5 @@
 using System;
+using JetBrains.Annotations;
 using Lykke.Cqrs.Configuration.Routing;
 
 namespace Lykke.Cqrs.Configuration.BoundedContext
@@ -6,6 +7,7 @@ namespace Lykke.Cqrs.Configuration.BoundedContext
     /// <summary>
     /// Fluent API interface for bounded context registration.
     /// </summary>
+    [PublicAPI]
     public interface IBoundedContextRegistration : IRegistration, IHideObjectMembers
     {
         /// <summary>Bounded context name.</summary>

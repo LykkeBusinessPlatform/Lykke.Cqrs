@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace Lykke.Cqrs.Configuration
 {
     /// <summary>
     /// Base interface for cqrs registrations.
     /// </summary>
+    [PublicAPI]
     public interface IRegistration
     {
         /// <summary>

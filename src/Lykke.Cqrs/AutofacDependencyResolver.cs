@@ -1,11 +1,13 @@
 ﻿using System;
 using Autofac;
+using JetBrains.Annotations;
 
 namespace Lykke.Cqrs
 {
     /// <summary>
     /// Dependency resolver for Autofac container.
     /// </summary>
+    [PublicAPI]
     public class AutofacDependencyResolver : IDependencyResolver
     {
         private readonly IComponentContext _context;
@@ -14,7 +16,7 @@ namespace Lykke.Cqrs
         /// C-tor
         /// </summary>
         /// <param name="context">Autofac component context.</param>
-        public AutofacDependencyResolver(IComponentContext context)
+        public AutofacDependencyResolver([NotNull] IComponentContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
