@@ -2,16 +2,24 @@
 using Lykke.Common.Log;
 using Lykke.Logs;
 using Lykke.Messaging.Contract;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 
 namespace Lykke.Cqrs.Tests
 {
     [TestFixture]
-    public class CommandDispatcherTests
+    public class CommandDispatcherTests : IDisposable
     {
-        private readonly ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
+        private readonly ILogFactory _logFactory;
+
+        public CommandDispatcherTests()
+        {
+            _logFactory = LogFactory.Create();
+        }
+
+        public void Dispose()
+        {
+            _logFactory?.Dispose();
+        }
 
         [SetUp]
         public void Setup()
@@ -22,7 +30,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void HandleTest()
         {
-            var dispatcher = new CommandDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new CommandDispatcher(_logFactory, "testBC");
             var handler = new CommandsHandler();
             var now = DateTime.UtcNow;
             bool ack1 = false;
@@ -43,7 +51,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void HandleOkResultTest()
         {
-            var dispatcher = new CommandDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new CommandDispatcher(_logFactory, "testBC");
             var handler = new CommandsResultHandler();
             bool ack = false;
 
@@ -57,7 +65,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void HandleFailResultTest()
         {
-            var dispatcher = new CommandDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new CommandDispatcher(_logFactory, "testBC");
             var handler = new CommandsResultHandler(true, 500);
             bool ack = false;
             long retryDelay = 0;
@@ -73,7 +81,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void HandleAsyncTest()
         {
-            var dispatcher = new CommandDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new CommandDispatcher(_logFactory, "testBC");
             var handler = new CommandsAsyncHandler(false);
             bool ack = false;
 
@@ -87,7 +95,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void ExceptionOnHandleAsyncTest()
         {
-            var dispatcher = new CommandDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new CommandDispatcher(_logFactory, "testBC");
             var handler = new CommandsAsyncHandler(true);
             bool ack = false;
             long retryDelay = 0;
@@ -103,7 +111,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void HandleAsyncResultTest()
         {
-            var dispatcher = new CommandDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new CommandDispatcher(_logFactory, "testBC");
             var handler = new CommandsAsyncResultHandler(false);
             bool ack = false;
 
@@ -117,7 +125,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void ExceptionOnHandleAsyncResultTest()
         {
-            var dispatcher = new CommandDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new CommandDispatcher(_logFactory, "testBC");
             var handler = new CommandsAsyncResultHandler(true);
             bool ack = false;
             long retryDelay = 0;
@@ -133,7 +141,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void WireWithOptionalParameterTest()
         {
-            var dispatcher = new CommandDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new CommandDispatcher(_logFactory, "testBC");
             var handler = new CommandRepoHandler();
             var int64Repo = new Int64Repo();
             bool ack = false;
@@ -149,7 +157,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void WireWithFactoryOptionalParameterTest()
         {
-            var dispatcher = new CommandDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new CommandDispatcher(_logFactory, "testBC");
             var handler = new CommandRepoHandler();
             var int64Repo = new Int64Repo();
             bool ack = false;
@@ -165,7 +173,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void WireWithFactoryOptionalParameterNullTest()
         {
-            var dispatcher = new CommandDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new CommandDispatcher(_logFactory, "testBC");
             var handler = new CommandRepoHandler();
             bool ack = false;
 
@@ -179,7 +187,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void MultipleHandlersAreNotAllowedDispatchTest()
         {
-            var dispatcher = new CommandDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new CommandDispatcher(_logFactory, "testBC");
             var handler1 = new CommandsHandler();
             var handler2 = new CommandsHandler();
 
@@ -193,7 +201,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void FailingCommandTest()
         {
-            var dispatcher = new CommandDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new CommandDispatcher(_logFactory, "testBC");
             var handler = new CommandsHandler(true);
             bool ack = true;
 
@@ -206,7 +214,7 @@ namespace Lykke.Cqrs.Tests
         [Test]
         public void NoHandlerCommandMustBeUnacked()
         {
-            var dispatcher = new CommandDispatcher(_loggerFactory, "testBC");
+            var dispatcher = new CommandDispatcher(_logFactory, "testBC");
             var ack = true;
 
             dispatcher.Dispatch("testCommand", (delay, acknowledge) => { ack = acknowledge; }, new Endpoint(), "route");

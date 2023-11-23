@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Common;
+using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Cqrs.Middleware;
 using Lykke.Cqrs.Utils;
 using Lykke.Messaging.Contract;
-using Microsoft.Extensions.Logging;
 
 namespace Lykke.Cqrs
 {
@@ -13,6 +15,7 @@ namespace Lykke.Cqrs
     {
         private readonly List<Action<object>> _events = new List<Action<object>>();
         private readonly int _batchSize;
+        private readonly ILog _log;
         private readonly long _failedEventRetryDelay;
         private readonly Stopwatch _sinceFirstEvent = new Stopwatch();
         private readonly EventInterceptorsQueue _eventInterceptorsProcessor;
@@ -20,12 +23,12 @@ namespace Lykke.Cqrs
         private readonly Action<object> _afterBatchApply;
 
         private long _counter;
-        private readonly ILogger<BatchManager> _logger;
 
         public long ApplyTimeout { get; }
 
+        [Obsolete]
         internal BatchManager(
-            ILoggerFactory loggerFactory,
+            ILog log,
             long failedEventRetryDelay,
             EventInterceptorsQueue eventInterceptorsProcessor,
             int batchSize = 0,
@@ -35,7 +38,25 @@ namespace Lykke.Cqrs
         {
             _afterBatchApply = afterBatchApply ?? (o => { });
             _beforeBatchApply = beforeBatchApply ?? (() => null);
-            _logger = loggerFactory.CreateLogger<BatchManager>();
+            _log = log;
+            _eventInterceptorsProcessor = eventInterceptorsProcessor;
+            _failedEventRetryDelay = failedEventRetryDelay;
+            ApplyTimeout = applyTimeout;
+            _batchSize = batchSize;
+        }
+
+        internal BatchManager(
+            ILogFactory logFactory,
+            long failedEventRetryDelay,
+            EventInterceptorsQueue eventInterceptorsProcessor,
+            int batchSize = 0,
+            long applyTimeout = 0,
+            Func<object> beforeBatchApply = null,
+            Action<object> afterBatchApply = null)
+        {
+            _afterBatchApply = afterBatchApply ?? (o => { });
+            _beforeBatchApply = beforeBatchApply ?? (() => null);
+            _log = logFactory.CreateLog(this);
             _eventInterceptorsProcessor = eventInterceptorsProcessor;
             _failedEventRetryDelay = failedEventRetryDelay;
             ApplyTimeout = applyTimeout;
@@ -47,7 +68,7 @@ namespace Lykke.Cqrs
             Tuple<object, AcknowledgeDelegate>[] events,
             EventOrigin origin)
         {
-            if (events.Length == 0)
+            if(events.Length == 0)
                 return;
 
             if (_batchSize == 0 && ApplyTimeout == 0)
@@ -125,7 +146,6 @@ namespace Lykke.Cqrs
                     _sinceFirstEvent.Reset();
                 }
             }
-
             if (!handles.Any())
                 return;
 
@@ -134,7 +154,6 @@ namespace Lykke.Cqrs
             {
                 handle(batchContext);
             }
-
             _afterBatchApply(batchContext);
         }
 
@@ -145,7 +164,7 @@ namespace Lykke.Cqrs
             object batchContext)
         {
             CommandHandlingResult[] results = @events
-                .Select(x => new CommandHandlingResult {Retry = false, RetryDelay = 0})
+                .Select(x => new CommandHandlingResult { Retry = false, RetryDelay = 0 })
                 .ToArray();
             try
             {
@@ -160,10 +179,10 @@ namespace Lykke.Cqrs
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex,
-                    "{Method}: Failed to handle events batch of type {EventType}",
-                    nameof(DoBatchHandle),
-                    origin.EventType.Name);
+                _log.WriteError(
+                    $"{nameof(EventDispatcher)}.{nameof(DoBatchHandle)}",
+                    "Failed to handle events batch of type " + origin.EventType.Name,
+                    ex);
                 foreach (var result in results)
                 {
                     result.Retry = true;
@@ -190,7 +209,7 @@ namespace Lykke.Cqrs
             object batchContext)
         {
             CommandHandlingResult[] results = @events
-                .Select(x => new CommandHandlingResult {Retry = false, RetryDelay = 0})
+                .Select(x => new CommandHandlingResult { Retry = false, RetryDelay = 0 })
                 .ToArray();
             try
             {
@@ -205,10 +224,10 @@ namespace Lykke.Cqrs
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex,
-                    "{Method}: Failed to handle events batch of type {EventType}",
-                    nameof(DoHandle),
-                    origin.EventType.Name);
+                _log.WriteError(
+                    $"{nameof(EventDispatcher)}.{nameof(DoHandle)}",
+                    "Failed to handle events batch of type " + origin.EventType.Name,
+                    ex);
                 foreach (var result in results)
                 {
                     result.Retry = true;
@@ -235,7 +254,7 @@ namespace Lykke.Cqrs
             EventOrigin origin,
             object batchContext)
         {
-            foreach (var batchHandlerInfo in batchHandlerInfos)
+            foreach(var batchHandlerInfo in batchHandlerInfos)
             {
                 var telemtryOperation = TelemetryHelper.InitTelemetryOperation(
                     "Cqrs handle events",
@@ -246,8 +265,7 @@ namespace Lykke.Cqrs
                 {
                     var handleResults = batchHandlerInfo.Item2(eventsArray, batchContext);
                     if (handleResults.Length != results.Length)
-                        _logger.LogWarning(batchHandlerInfo.Item1, origin.EventType.Name,
-                            "Number of results is not equal to number of events!");
+                        _log.WriteWarning(batchHandlerInfo.Item1, origin.EventType.Name, "Number of results is not equal to number of events!");
                     for (int i = 0; i < handleResults.Length; ++i)
                     {
                         if (!handleResults[i].Retry)
@@ -261,9 +279,7 @@ namespace Lykke.Cqrs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error in {BatchHandlerInfo}, event type {EventType}",
-                        batchHandlerInfo.Item1, 
-                        origin.EventType.Name);
+                    _log.WriteError(batchHandlerInfo.Item1, origin.EventType.Name, ex);
 
                     foreach (var result in results)
                     {
@@ -288,7 +304,7 @@ namespace Lykke.Cqrs
             EventOrigin origin,
             object batchContext)
         {
-            for (int i = 0; i < eventsArray.Length; ++i)
+            for(int i = 0; i < eventsArray.Length; ++i)
             {
                 var @event = eventsArray[i];
                 foreach (var handlerInfo in handlerInfos)
@@ -318,9 +334,7 @@ namespace Lykke.Cqrs
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error in handler {HandlerType}, event {EventType}",
-                            handlerInfo.HandlerTypeName,
-                            origin.EventType.Name);
+                        _log.WriteError(handlerInfo.HandlerTypeName, origin.EventType.Name, ex);
 
                         results[i].Retry = true;
                         results[i].RetryDelay = _failedEventRetryDelay;
