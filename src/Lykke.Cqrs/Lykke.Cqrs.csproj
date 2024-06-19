@@ -6,7 +6,7 @@
     <PackageId>LykkeBiz.Cqrs</PackageId>
     <PackageTags>Lykke Cqrs</PackageTags>
     <PackageProjectUrl>https://github.com/LykkeBusinessPlatform/Lykke.Cqrs</PackageProjectUrl>
-    <Version>14.0.0</Version>
+    <Version>14.1.0</Version>
     <Authors>Lykke Business</Authors>
     <Description>Lykke Cqrs library</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>

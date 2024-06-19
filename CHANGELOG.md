@@ -1,4 +1,4 @@
-## [[tbd]] (2024-06-19)
+## 14.1.0 (2024-06-19)
 
 ### Changed
 - Bump LykkeBiz.Messaging -> 12.1.0
