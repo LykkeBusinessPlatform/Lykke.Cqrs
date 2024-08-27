@@ -54,9 +54,9 @@ namespace Lykke.Cqrs.Tests
                     messagingEngine.Send("1", new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
                     Thread.Sleep(1000);
 
-                    Assert.True(simpleEventInterceptor.Intercepted);
-                    Assert.NotNull(simpleEventInterceptor.InterceptionTimestamp);
-                    Assert.True(TestSaga.Messages.Contains("1"));
+                    Assert.That(simpleEventInterceptor.Intercepted, Is.True);
+                    Assert.That(simpleEventInterceptor.InterceptionTimestamp, Is.Not.Null);
+                    Assert.That(TestSaga.Messages.Contains("1"), Is.True);
                 }
             }
         }
@@ -87,12 +87,12 @@ namespace Lykke.Cqrs.Tests
                     messagingEngine.Send("2", new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
                     Thread.Sleep(1000);
 
-                    Assert.True(simpleEventInterceptorOne.Intercepted);
-                    Assert.True(simpleEventInterceptorTwo.Intercepted);
-                    Assert.NotNull(simpleEventInterceptorOne.InterceptionTimestamp);
-                    Assert.NotNull(simpleEventInterceptorTwo.InterceptionTimestamp);
-                    Assert.True(simpleEventInterceptorOne.InterceptionTimestamp < simpleEventInterceptorTwo.InterceptionTimestamp);
-                    Assert.True(TestSaga.Messages.Contains("2"));
+                    Assert.That(simpleEventInterceptorOne.Intercepted, Is.True);
+                    Assert.That(simpleEventInterceptorTwo.Intercepted, Is.True);
+                    Assert.That(simpleEventInterceptorOne.InterceptionTimestamp, Is.Not.Null);
+                    Assert.That(simpleEventInterceptorTwo.InterceptionTimestamp, Is.Not.Null);
+                    Assert.That(simpleEventInterceptorOne.InterceptionTimestamp < simpleEventInterceptorTwo.InterceptionTimestamp, Is.True);
+                    Assert.That(TestSaga.Messages.Contains("2"), Is.True);
                 }
             }
         }
@@ -123,9 +123,9 @@ namespace Lykke.Cqrs.Tests
                     messagingEngine.Send(1, new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
                     Thread.Sleep(1000);
 
-                    Assert.True(commandSimpleInterceptor.Intercepted);
-                    Assert.NotNull(commandSimpleInterceptor.InterceptionTimestamp);
-                    Assert.True(commandsHandler.HandledCommands.Count > 0);
+                    Assert.That(commandSimpleInterceptor.Intercepted, Is.True);
+                    Assert.That(commandSimpleInterceptor.InterceptionTimestamp, Is.Not.Null);
+                    Assert.That(commandsHandler.HandledCommands.Count > 0, Is.True);
                 }
             }
         }
@@ -157,12 +157,12 @@ namespace Lykke.Cqrs.Tests
                     messagingEngine.Send(1, new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
                     Thread.Sleep(3000);
 
-                    Assert.True(commandSimpleInterceptorOne.Intercepted);
-                    Assert.True(commandSimpleInterceptorTwo.Intercepted);
-                    Assert.NotNull(commandSimpleInterceptorOne.InterceptionTimestamp);
-                    Assert.NotNull(commandSimpleInterceptorTwo.InterceptionTimestamp);
-                    Assert.True(commandSimpleInterceptorOne.InterceptionTimestamp < commandSimpleInterceptorTwo.InterceptionTimestamp);
-                    Assert.True(commandsHandler.HandledCommands.Count > 0);
+                    Assert.That(commandSimpleInterceptorOne.Intercepted, Is.True);
+                    Assert.That(commandSimpleInterceptorTwo.Intercepted, Is.True);
+                    Assert.That(commandSimpleInterceptorOne.InterceptionTimestamp, Is.Not.Null);
+                    Assert.That(commandSimpleInterceptorTwo.InterceptionTimestamp, Is.Not.Null);
+                    Assert.That(commandSimpleInterceptorOne.InterceptionTimestamp < commandSimpleInterceptorTwo.InterceptionTimestamp, Is.True);
+                    Assert.That(commandsHandler.HandledCommands.Count > 0, Is.True);
                 }
             }
         }
@@ -198,8 +198,8 @@ namespace Lykke.Cqrs.Tests
                     messagingEngine.Send("1", new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
                     Thread.Sleep(1000);
 
-                    Assert.True(eventLoggedCount > 0, "Event was not logged");
-                    Assert.True(eventLoggedCount == 1, "Event was logged more than once");
+                    Assert.That(eventLoggedCount > 0, Is.True, "Event was not logged");
+                    Assert.That(eventLoggedCount == 1, Is.True, "Event was logged more than once");
                 }
             }
         }
@@ -239,7 +239,7 @@ namespace Lykke.Cqrs.Tests
                         Console.SetOut(prevOut);
 
                         var output = writer.ToString();
-                        Assert.True(output.IsNullOrEmpty(), "Event was logged");
+                        Assert.That(string.IsNullOrEmpty(output), Is.True, "Event was not logged");
                     }
                 }
             }
@@ -270,7 +270,7 @@ namespace Lykke.Cqrs.Tests
                     messagingEngine.Send("1", new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
                     Thread.Sleep(1000);
 
-                    Assert.True(simpleEventInterceptor.Intercepted);
+                    Assert.That(simpleEventInterceptor.Intercepted, Is.True);
                 }
             }
         }
@@ -307,8 +307,8 @@ namespace Lykke.Cqrs.Tests
                     messagingEngine.Send(1, new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
                     Thread.Sleep(1000);
 
-                    Assert.True(commandLoggedCount > 0, "Command was not logged");
-                    Assert.True(commandLoggedCount == 1, "Command was logged more than once");
+                    Assert.That(commandLoggedCount > 0, Is.True, "Command was not logged");
+                    Assert.That(commandLoggedCount == 1, Is.True, "Command was logged more than once");
                 }
             }
         }
@@ -350,7 +350,7 @@ namespace Lykke.Cqrs.Tests
                         Console.SetOut(prevOut);
 
                         var output = writer.ToString();
-                        Assert.True(output.IsNullOrEmpty(), "Command was logged");
+                        Assert.That(string.IsNullOrEmpty(output), Is.True, "Command was logged");
                     }
                 }
             }
@@ -383,7 +383,7 @@ namespace Lykke.Cqrs.Tests
                     messagingEngine.Send(1, new Endpoint("InMemory", "lykke-wallet-events", serializationFormat: SerializationFormat.Json));
                     Thread.Sleep(1000);
 
-                    Assert.True(commandSimpleInterceptor.Intercepted);
+                    Assert.That(commandSimpleInterceptor.Intercepted, Is.True);
                 }
             }
         }

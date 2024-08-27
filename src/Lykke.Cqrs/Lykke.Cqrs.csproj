@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Lykke.Cqrs</AssemblyName>
     <PackageId>LykkeBiz.Cqrs</PackageId>
     <PackageTags>Lykke Cqrs</PackageTags>
@@ -13,14 +13,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Castle.Windsor" Version="5.1.2" />
-    <PackageReference Include="LykkeBiz.Messaging" Version="12.1.0" />
+    <PackageReference Include="Castle.Windsor" Version="6.0.0" />
+    <PackageReference Include="LykkeBiz.Messaging" Version="13.0.0" />
   </ItemGroup>
 
   <ItemGroup Label="dotnet pack instructions">
-    <Content Include="$(OutputPath)$(AssemblyName).pdb" Condition="$(TargetFramework) == 'netstandard2.0'">
+    <Content Include="$(OutputPath)$(AssemblyName).pdb" Condition="$(TargetFramework) == 'net8.0'">
       <Pack>true</Pack>
-      <PackagePath>lib/netstandard2.0</PackagePath>
+      <PackagePath>lib/net8.0</PackagePath>
     </Content>
   </ItemGroup>
 

@@ -45,9 +45,9 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Dispatch("testBC", now, (delay, acknowledge) => { ack3 = acknowledge; });
 
             Assert.That(handler.HandledEvents, Is.EquivalentTo(new object[] { "test", 1, now}), "Some events were not dispatched");
-            Assert.True(ack1, "Handled string command was not acknowledged");
-            Assert.True(ack2, "Handled int command was not acknowledged");
-            Assert.True(ack3, "Handled datetime command was not acknowledged");
+            Assert.That(ack1, Is.True, "Handled string command was not acknowledged");
+            Assert.That(ack2, Is.True, "Handled int command was not acknowledged");
+            Assert.That(ack3, Is.True, "Handled datetime command was not acknowledged");
         }
 
         [Test]
@@ -64,7 +64,7 @@ namespace Lykke.Cqrs.Tests
 
             Assert.That(handler1.HandledEvents, Is.EquivalentTo(new[] { "test" }), "Event was not dispatched");
             Assert.That(handler2.HandledEvents, Is.EquivalentTo(new[] { "test" }), "Event was not dispatched");
-            Assert.True(ack, "Handled command was not acknowledged");
+            Assert.That(ack, Is.True, "Handled command was not acknowledged");
         }
 
         [Test]
@@ -81,9 +81,9 @@ namespace Lykke.Cqrs.Tests
 
             Assert.That(handler1.HandledEvents, Is.EquivalentTo(new[] { "test" }), "Event was not dispatched to first handler");
             Assert.That(handler2.HandledEvents, Is.EquivalentTo(new[] { "test" }), "Event was not dispatched to second handler");
-            Assert.NotNull(result, "fail was not reported");
-            Assert.AreEqual(EventDispatcher.FailedEventRetryDelay, result.Item1, "fail was not reported");
-            Assert.False(result.Item2, "fail was not reported");
+            Assert.That(result, Is.Not.Null, "fail was not reported");
+            Assert.That(EventDispatcher.FailedEventRetryDelay, Is.EqualTo(result.Item1), "fail was not reported");
+            Assert.That(result.Item2, Is.False, "fail was not reported");
         }
 
         [Test]
@@ -96,9 +96,9 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Wire("testBC", handler);
             dispatcher.Dispatch("testBC", "test", (delay, acknowledge) => { result = Tuple.Create(delay, acknowledge); });
 
-            Assert.NotNull(result, "fail was not reported");
-            Assert.AreEqual(100, result.Item1, "fail was not reported");
-            Assert.False(result.Item2, "fail was not reported");
+            Assert.That(result, Is.Not.Null, "fail was not reported");
+            Assert.That(100, Is.EqualTo(result.Item1), "fail was not reported");
+            Assert.That(result.Item2, Is.False, "fail was not reported");
         }
 
         // Note: Strange logic in EventDispatcher - might need to be revised in the future.
@@ -110,7 +110,7 @@ namespace Lykke.Cqrs.Tests
 
             dispatcher.Dispatch("testBC", "test", (delay, acknowledge) => { ack = acknowledge; });
 
-            Assert.True(ack);
+            Assert.That(ack, Is.True);
         }
 
         [Test]
@@ -123,8 +123,8 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Wire("testBC", asyncHandler);
             dispatcher.Dispatch("testBC", "test", (delay, acknowledge) => { ack = acknowledge; });
 
-            Assert.AreEqual(1, asyncHandler.HandledEvents.Count);
-            Assert.True(ack, "Event handler was not processed properly");
+            Assert.That(1, Is.EqualTo(asyncHandler.HandledEvents.Count));
+            Assert.That(ack, Is.True, "Event handler was not processed properly");
         }
 
         [Test]
@@ -141,8 +141,8 @@ namespace Lykke.Cqrs.Tests
                     ++failedCount;
             });
 
-            Assert.AreEqual(0, handler.HandledEvents.Count);
-            Assert.AreEqual(1, failedCount, "Event handler was not processed properly");
+            Assert.That(0, Is.EqualTo(handler.HandledEvents.Count));
+            Assert.That(1, Is.EqualTo(failedCount), "Event handler was not processed properly");
         }
 
         [Test]
@@ -155,8 +155,8 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Wire("testBC", handler);
             dispatcher.Dispatch("testBC", "test", (delay, acknowledge) => { ack = acknowledge; });
 
-            Assert.AreEqual(1, handler.HandledEvents.Count);
-            Assert.True(ack, "Event handler was not processed properly");
+            Assert.That(1, Is.EqualTo(handler.HandledEvents.Count));
+            Assert.That(ack, Is.True, "Event handler was not processed properly");
         }
 
         [Test]
@@ -173,8 +173,8 @@ namespace Lykke.Cqrs.Tests
                     ++failedCount;
             });
 
-            Assert.AreEqual(0, handler.HandledEvents.Count);
-            Assert.AreEqual(1, failedCount, "Event handler was not processed properly");
+            Assert.That(0, Is.EqualTo(handler.HandledEvents.Count));
+            Assert.That(1, Is.EqualTo(failedCount), "Event handler was not processed properly");
         }
 
         [Test]
@@ -194,11 +194,11 @@ namespace Lykke.Cqrs.Tests
                 Tuple.Create<object, AcknowledgeDelegate>("с", (delay, acknowledge) => { ack3 = acknowledge; })
             });
 
-            Assert.NotNull(result, "fail was not reported");
-            Assert.False(result.Item2, "fail was not reported");
-            Assert.AreEqual(3, handler.HandledEvents.Count, "not all events were handled (exception in first event handling prevented following events processing?)");
-            Assert.True(ack2);
-            Assert.True(ack3);
+            Assert.That(result, Is.Not.Null, "fail was not reported");
+            Assert.That(result.Item2, Is.False, "fail was not reported");
+            Assert.That(3, Is.EqualTo(handler.HandledEvents.Count), "not all events were handled (exception in first event handling prevented following events processing?)");
+            Assert.That(ack2, Is.True);
+            Assert.That(ack3, Is.True);
         }
 
         [Test]
@@ -218,10 +218,10 @@ namespace Lykke.Cqrs.Tests
                 Tuple.Create<object, AcknowledgeDelegate>("с", (delay, acknowledge) => { ack3 = acknowledge; })
             });
 
-            Assert.AreEqual(3, handler.HandledEvents.Count, "not all events were handled (exception in first event handling prevented following events processing?)");
-            Assert.True(ack1);
-            Assert.True(ack2);
-            Assert.True(ack3);
+            Assert.That(3, Is.EqualTo(handler.HandledEvents.Count), "not all events were handled (exception in first event handling prevented following events processing?)");
+            Assert.That(ack1, Is.True);
+            Assert.That(ack2, Is.True);
+            Assert.That(ack3, Is.True);
         }
 
         [Test]
@@ -241,10 +241,10 @@ namespace Lykke.Cqrs.Tests
                 Tuple.Create<object, AcknowledgeDelegate>("с", (delay, acknowledge) => { ack3 = acknowledge; })
             });
 
-            Assert.AreEqual(0, handler.HandledEvents.Count, "Some events were handled");
-            Assert.False(ack1);
-            Assert.False(ack2);
-            Assert.False(ack3);
+            Assert.That(0, Is.EqualTo(handler.HandledEvents.Count), "Some events were handled");
+            Assert.That(ack1, Is.False);
+            Assert.That(ack2, Is.False);
+            Assert.That(ack3, Is.False);
         }
 
         [Test]
@@ -267,16 +267,16 @@ namespace Lykke.Cqrs.Tests
                 Tuple.Create<object, AcknowledgeDelegate>(new DateTime(2016,3,2), (delay, acknowledge) => { }),
             });
 
-            Assert.AreEqual(0, handler.HandledEvents.Count, "Events were delivered before batch is filled");
+            Assert.That(0, Is.EqualTo(handler.HandledEvents.Count), "Events were delivered before batch is filled");
 
             dispatcher.Dispatch("testBC", new[]
             {
                 Tuple.Create<object, AcknowledgeDelegate>(new DateTime(2016,3,3), (delay, acknowledge) => { })
             });
 
-            Assert.AreEqual(3, handler.HandledEvents.Count, "Not all events were delivered");
-            Assert.True(handler.BatchStartReported, "Batch start callback was not called");
-            Assert.True(handler.BatchFinishReported, "Batch after apply  callback was not called");
+            Assert.That(3, Is.EqualTo(handler.HandledEvents.Count), "Not all events were delivered");
+            Assert.That(handler.BatchStartReported, Is.True, "Batch start callback was not called");
+            Assert.That(handler.BatchFinishReported, Is.True, "Batch after apply  callback was not called");
             Assert.That(
                 handler.HandledEvents.Select(t=>t.Item2),
                 Is.EqualTo(new object[]{handler.LastCreatedBatchContext,handler.LastCreatedBatchContext,handler.LastCreatedBatchContext}),
@@ -303,13 +303,13 @@ namespace Lykke.Cqrs.Tests
                 Tuple.Create<object, AcknowledgeDelegate>(new DateTime(2016,3,2), (delay, acknowledge) => { })
             });
 
-            Assert.AreEqual(0, handler.HandledEvents.Count, "Events were delivered before batch apply timeoout");
+            Assert.That(0, Is.EqualTo(handler.HandledEvents.Count), "Events were delivered before batch apply timeoout");
 
             Thread.Sleep(2000);
 
-            Assert.AreEqual(2, handler.HandledEvents.Count, "Not all events were delivered");
-            Assert.True(handler.BatchStartReported, "Batch start callback was not called");
-            Assert.True(handler.BatchFinishReported, "Batch after apply  callback was not called");
+            Assert.That(2, Is.EqualTo(handler.HandledEvents.Count), "Not all events were delivered");
+            Assert.That(handler.BatchStartReported, Is.True, "Batch start callback was not called");
+            Assert.That(handler.BatchFinishReported, Is.True, "Batch after apply  callback was not called");
             Assert.That(
                 handler.HandledEvents.Select(t => t.Item2),
                 Is.EqualTo(new object[] { handler.LastCreatedBatchContext, handler.LastCreatedBatchContext }),
@@ -337,22 +337,22 @@ namespace Lykke.Cqrs.Tests
                 Tuple.Create<object, AcknowledgeDelegate>(new DateTime(2016,3,2), (delay, acknowledge) => { }),
             });
 
-            Assert.AreEqual(0, handler.HandledEvents.Count, "Events were delivered before batch is filled");
+            Assert.That(0, Is.EqualTo(handler.HandledEvents.Count), "Events were delivered before batch is filled");
 
             dispatcher.Dispatch("testBC", new[]
             {
                 Tuple.Create<object, AcknowledgeDelegate>(new DateTime(2016,3,3), (delay, acknowledge) => { })
             });
 
-            Assert.AreEqual(3, handler.HandledEvents.Count, "Not all events were delivered");
-            Assert.True(handler.BatchStartReported, "Batch start callback was not called");
-            Assert.True(handler.BatchFinishReported, "Batch after apply  callback was not called");
+            Assert.That(3, Is.EqualTo(handler.HandledEvents.Count), "Not all events were delivered");
+            Assert.That(handler.BatchStartReported, Is.True, "Batch start callback was not called");
+            Assert.That(handler.BatchFinishReported, Is.True, "Batch after apply  callback was not called");
             Assert.That(
                 handler.HandledEvents.Select(t => t.Item2),
                 Is.EqualTo(new object[] { handler.LastCreatedBatchContext, handler.LastCreatedBatchContext, handler.LastCreatedBatchContext }),
                 "Batch context was not the same for all evants in the batch");
-            Assert.False(result.Item2,"failed event was acked");
-            Assert.AreEqual(10, result.Item1,"failed event retry timeout was wrong");
+            Assert.That(result.Item2, Is.False,"failed event was acked");
+            Assert.That(10, Is.EqualTo(result.Item1),"failed event retry timeout was wrong");
         }
     }
 }
