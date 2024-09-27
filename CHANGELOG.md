@@ -1,4 +1,4 @@
-## [[tbd]] (September 27, 2024)
+## 15.1.0 (September 27, 2024)
 * Migrate to .NET 8
 
 ## 15.0.0 (September 27, 2024)
