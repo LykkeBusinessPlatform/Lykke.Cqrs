@@ -148,7 +148,7 @@ namespace Lykke.Cqrs.Tests
                     engine.StartSubscribers();
                     engine.SendCommand(new CreateCashOutCommand { Payload = "test data" }, null, "lykke-wallet");
 
-                    Assert.True(TestSaga.Complete.WaitOne(2000), "Saga has not got events or failed to send command");
+                    Assert.That(TestSaga.Complete.WaitOne(2000), Is.True, "Saga has not got events or failed to send command");
                 }
             }
         }
@@ -254,7 +254,7 @@ namespace Lykke.Cqrs.Tests
                     messagingEngine.Send("high", new Endpoint("InMemory", "bc.exchange1", serializationFormat: SerializationFormat.Json));
                     Thread.Sleep(2000);
 
-                    Assert.True(commandHandler.HandledCommands.Take(2).Any(c => (string)c == "high"));
+                    Assert.That(commandHandler.HandledCommands.Take(2).Any(c => (string)c == "high"), Is.True);
                 }
             }
         }
@@ -386,12 +386,12 @@ namespace Lykke.Cqrs.Tests
             ))
             {
                 engine.StartAll();
-                Assert.True(testProcess.Started.WaitOne(1000), "process was not started");
+                Assert.That(testProcess.Started.WaitOne(1000), Is.True, "process was not started");
                 Thread.Sleep(1000);
             }
 
-            Assert.True(testProcess.Disposed.WaitOne(1000), "process was not disposed on engine dispose");
-            Assert.True(commandHandler.HandledCommands.Count > 0, "commands sent by process were not processed");
+            Assert.That(testProcess.Disposed.WaitOne(1000), Is.True, "process was not disposed on engine dispose");
+            Assert.That(commandHandler.HandledCommands.Count > 0, Is.True, "commands sent by process were not processed");
         }
 
         /*

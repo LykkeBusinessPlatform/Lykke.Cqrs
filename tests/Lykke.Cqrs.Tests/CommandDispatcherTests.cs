@@ -43,9 +43,9 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Dispatch(now, (delay, acknowledge) => { ack3 = acknowledge; }, new Endpoint(), "route");
 
             Assert.That(handler.HandledCommands, Is.EquivalentTo(new object[] { "test", 1, now }), "Some commands were not dispatched");
-            Assert.True(ack1, "String command was not acked");
-            Assert.True(ack2, "Int command was not acked");
-            Assert.True(ack3, "DateTime command was not acked");
+            Assert.That(ack1, Is.True, "String command was not acked");
+            Assert.That(ack2, Is.True, "Int command was not acked");
+            Assert.That(ack3, Is.True, "DateTime command was not acked");
         }
 
         [Test]
@@ -59,7 +59,7 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Dispatch("test", (delay, acknowledge) => { ack = acknowledge; }, new Endpoint(), "route");
 
             Assert.That(handler.HandledCommands, Is.EquivalentTo(new object[] { "test" }), "Some commands were not dispatched");
-            Assert.True(ack, "Command was not acked");
+            Assert.That(ack, Is.True, "Command was not acked");
         }
 
         [Test]
@@ -74,8 +74,8 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Dispatch("test", (delay, acknowledge) => { retryDelay = delay; ack = acknowledge; }, new Endpoint(), "route");
 
             Assert.That(handler.HandledCommands, Is.EquivalentTo(new object[] { "test" }), "Some commands were not dispatched");
-            Assert.False(ack, "Command was not acked");
-            Assert.AreEqual(500, retryDelay);
+            Assert.That(ack, Is.False, "Command was not acked");
+            Assert.That(500, Is.EqualTo(retryDelay));
         }
 
         [Test]
@@ -89,7 +89,7 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Dispatch("test", (delay, acknowledge) => { ack = acknowledge; }, new Endpoint(), "route");
 
             Assert.That(handler.HandledCommands, Is.EquivalentTo(new object[] { "test" }), "Some commands were not dispatched");
-            Assert.True(ack, "Command was not acked");
+            Assert.That(ack, Is.True, "Command was not acked");
         }
 
         [Test]
@@ -103,9 +103,9 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Wire(handler);
             dispatcher.Dispatch("test", (delay, acknowledge) => { retryDelay = delay; ack = acknowledge; }, new Endpoint(), "route");
 
-            Assert.AreEqual(0, handler.HandledCommands.Count);
-            Assert.False(ack, "Command was not acked");
-            Assert.AreEqual(CommandDispatcher.FailedCommandRetryDelay, retryDelay);
+            Assert.That(0, Is.EqualTo(handler.HandledCommands.Count));
+            Assert.That(ack, Is.False, "Command was not acked");
+            Assert.That(CommandDispatcher.FailedCommandRetryDelay, Is.EqualTo(retryDelay));
         }
 
         [Test]
@@ -119,7 +119,7 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Dispatch("test", (delay, acknowledge) => { ack = acknowledge; }, new Endpoint(), "route");
 
             Assert.That(handler.HandledCommands, Is.EquivalentTo(new object[] { "test" }), "Some commands were not dispatched");
-            Assert.True(ack, "Command was not acked");
+            Assert.That(ack, Is.True, "Command was not acked");
         }
 
         [Test]
@@ -133,9 +133,9 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Wire(handler);
             dispatcher.Dispatch("test", (delay, acknowledge) => { retryDelay = delay; ack = acknowledge; }, new Endpoint(), "route");
 
-            Assert.AreEqual(0, handler.HandledCommands.Count);
-            Assert.False(ack, "Command was not acked");
-            Assert.AreEqual(CommandDispatcher.FailedCommandRetryDelay, retryDelay);
+            Assert.That(0, Is.EqualTo(handler.HandledCommands.Count));
+            Assert.That(ack, Is.False, "Command was not acked");
+            Assert.That(CommandDispatcher.FailedCommandRetryDelay, Is.EqualTo(retryDelay));
         }
 
         [Test]
@@ -150,8 +150,8 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Dispatch((Int64)1, (delay, acknowledge) => { ack = acknowledge; }, new Endpoint(), "route");
 
             Assert.That(handler.HandledCommands, Is.EquivalentTo(new object[] { (Int64)1 }), "Some commands were not dispatched");
-            Assert.IsFalse(int64Repo.IsDisposed, "Optional parameter should NOT be disposed");
-            Assert.True(ack, "Command was not acked");
+            Assert.That(int64Repo.IsDisposed, Is.False, "Optional parameter should NOT be disposed");
+            Assert.That(ack, Is.True, "Command was not acked");
         }
 
         [Test]
@@ -166,8 +166,8 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Dispatch((Int64)1, (delay, acknowledge) => { ack = acknowledge; }, new Endpoint(), "route");
 
             Assert.That(handler.HandledCommands, Is.EquivalentTo(new object[] { (Int64)1 }), "Some commands were not dispatched");
-            Assert.IsTrue(int64Repo.IsDisposed, "Factory parameter should be disposed");
-            Assert.True(ack, "Command was not acked");
+            Assert.That(int64Repo.IsDisposed, Is.True, "Factory parameter should be disposed");
+            Assert.That(ack, Is.True, "Command was not acked");
         }
 
         [Test]
@@ -181,7 +181,7 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Dispatch((Int64)1, (delay, acknowledge) => { ack = acknowledge; }, new Endpoint(), "route");
 
             Assert.That(handler.HandledCommands, Is.EquivalentTo(new object[] { (Int64)1 }), "Some commands were not dispatched");
-            Assert.True(ack, "Command was not acked");
+            Assert.That(ack, Is.True, "Command was not acked");
         }
 
         [Test]
@@ -208,7 +208,7 @@ namespace Lykke.Cqrs.Tests
             dispatcher.Wire(handler);
             dispatcher.Dispatch("testCommand", (delay, acknowledge) => { ack = acknowledge; }, new Endpoint(), "route");
 
-            Assert.False(ack,"Failed command was not unacked");
+            Assert.That(ack, Is.False,"Failed command was not unacked");
         }
 
         [Test]
@@ -219,7 +219,7 @@ namespace Lykke.Cqrs.Tests
 
             dispatcher.Dispatch("testCommand", (delay, acknowledge) => { ack = acknowledge; }, new Endpoint(), "route");
 
-            Assert.False(ack, "Command with no handler was acked");
+            Assert.That(ack, Is.False, "Command with no handler was acked");
         }
     }
 }

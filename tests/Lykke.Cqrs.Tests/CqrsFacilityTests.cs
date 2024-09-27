@@ -70,7 +70,7 @@ namespace Lykke.Cqrs.Tests
                 container.Resolve<ICqrsEngineBootstrapper>().Start();
                 container.Resolve<CqrEngineDependentComponent>();
 
-                Assert.False(reslovedCqrsDependentComponentBeforeInit, "ICqrsEngine was resolved as dependency before it was initialized");
+                Assert.That(reslovedCqrsDependentComponentBeforeInit, Is.False, "ICqrsEngine was resolved as dependency before it was initialized");
             }
         }
 
@@ -85,9 +85,9 @@ namespace Lykke.Cqrs.Tests
                     .AddFacility<StartableFacility>() // (f => f.DeferredTryStart());
                     .Register(Component.For<IMessagingEngine>().Instance(new Mock<IMessagingEngine>().Object))
                     .Register(Component.For<CqrEngineDependentComponent>().StartUsingMethod("Start"));
-                Assert.False(CqrEngineDependentComponent.Started, "Component was started before commandSender initialization");
+                Assert.That(CqrEngineDependentComponent.Started, Is.False, "Component was started before commandSender initialization");
                 container.Resolve<ICqrsEngineBootstrapper>().Start();
-                Assert.True(CqrEngineDependentComponent.Started, "Component was not started after commandSender initialization");
+                Assert.That(CqrEngineDependentComponent.Started, Is.True, "Component was not started after commandSender initialization");
             }
         }
 
@@ -141,12 +141,12 @@ namespace Lykke.Cqrs.Tests
                 eventDispatcher.Dispatch("remote", "event4", (delay, acknowledge) => { });
 
                 Assert.That(eventListener.Events, Is.EquivalentTo(new[] { "event1", "event2", "event3", "event4" }), "Event was not dispatched");
-                Assert.True(eventListener.Sessions.Any(), "Batch start callback was not called");
-                Assert.AreEqual(2, eventListener.Sessions.Count, "Event were not dispatched in batches");
+                Assert.That(eventListener.Sessions.Any(), Is.True, "Batch start callback was not called");
+                Assert.That(2, Is.EqualTo(eventListener.Sessions.Count), "Event were not dispatched in batches");
                 Assert.That(eventListener.Sessions[0].Events, Is.EquivalentTo(new[] { "event1", "event2" }), "Wrong events in batch");
                 Assert.That(eventListener.Sessions[1].Events, Is.EquivalentTo(new[] { "event3", "event4" }), "Wrong events in batch");
-                Assert.True(eventListener.Sessions[0].Commited, "Batch applied callback was not called");
-                Assert.True(eventListener.Sessions[1].Commited, "Batch applied callback was not called");
+                Assert.That(eventListener.Sessions[0].Commited, Is.True, "Batch applied callback was not called");
+                Assert.That(eventListener.Sessions[1].Commited, Is.True, "Batch applied callback was not called");
             }
         }
 
@@ -196,8 +196,8 @@ namespace Lykke.Cqrs.Tests
                     exception = e;
                 }
 
-                Assert.NotNull(exception, "Component with ICommandSender dependency is resolvable before cqrs engine is bootstrapped");
-                Assert.True(
+                Assert.That(exception, Is.Not.Null, "Component with ICommandSender dependency is resolvable before cqrs engine is bootstrapped");
+                Assert.That(
                     exception.Message.Contains("Service 'Lykke.Cqrs.ICommandSender' which was not registered"),
                     "Component with ICommandSender dependency is resolvable before cqrs engine is bootstrapped");
 
@@ -235,8 +235,8 @@ namespace Lykke.Cqrs.Tests
                 Thread.Sleep(200);
 
                 Assert.That(commandsHandler.HandledCommands, Is.EqualTo(new[] { 1 }), "Command was not dispatched");
-                Assert.AreEqual(100, retrydelay);
-                Assert.False(acknowledged);
+                Assert.That(100, Is.EqualTo(retrydelay));
+                Assert.That(acknowledged, Is.False);
             }
         }
 
@@ -265,13 +265,13 @@ namespace Lykke.Cqrs.Tests
                 }, endpoint, "route");
                 Thread.Sleep(200);
 
-                Assert.AreEqual(1, commandsHandler.HandledCommands.Count, "Command was not dispatched");
+                Assert.That(1, Is.EqualTo(commandsHandler.HandledCommands.Count), "Command was not dispatched");
                 Assert.That(commandsHandler.HandledCommands[0], Is.TypeOf<RoutedCommand<DateTime>>(), "Command was not dispatched with wrong type");
                 Assert.That(((RoutedCommand<DateTime>)(commandsHandler.HandledCommands[0])).Command, Is.EqualTo(command), "Routed command was not dispatched with wrong command");
                 Assert.That(((RoutedCommand<DateTime>)(commandsHandler.HandledCommands[0])).OriginEndpoint, Is.EqualTo(endpoint), "Routed command was dispatched with wrong origin endpoint");
                 Assert.That(((RoutedCommand<DateTime>)(commandsHandler.HandledCommands[0])).OriginRoute, Is.EqualTo("route"), "Routed command was dispatched with wrong origin route");
-                Assert.AreEqual(100, retrydelay);
-                Assert.False(acknowledged);
+                Assert.That(100, Is.EqualTo(retrydelay));
+                Assert.That(acknowledged, Is.False);
             }
         }
 
@@ -297,8 +297,8 @@ namespace Lykke.Cqrs.Tests
                 }, new Endpoint(), "route");
                 Thread.Sleep(200);
 
-                Assert.AreEqual(100, retrydelay);
-                Assert.False(acknowledged);
+                Assert.That(100, Is.EqualTo(retrydelay));
+                Assert.That(acknowledged, Is.False);
             }
         }
 
