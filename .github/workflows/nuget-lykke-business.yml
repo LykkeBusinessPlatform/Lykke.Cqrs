@@ -1,24 +1,24 @@
 name: Publish Lykke Infrastructure NuGet Package
-# This workflow is agreed on and requirements are documented 
+# This workflow is agreed on and requirements are documented
 # in https://bit.ly/4529Q9Q.
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version number (e.g. v1.0.0)'
+        description: "Version number (e.g. v1.0.0)"
         required: true
-        default: 'v1.0.0'
+        default: "v1.0.0"
       create_release:
-        description: 'Create a GitHub release'
+        description: "Create a GitHub release"
         required: true
-        default: 'true'
+        default: "true"
       update_changelog:
-        description: 'Update CHANGELOG.md'
+        description: "Update CHANGELOG.md"
         required: true
-        default: 'true'
+        default: "true"
       release_name:
-        description: 'Release name. If empty, will be extracted from CHANGELOG.md or default value [Release ${VERSION}] will be used'
+        description: "Release name. If empty, will be extracted from CHANGELOG.md or default value [Release ${VERSION}] will be used"
         required: false
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
@@ -45,12 +45,12 @@ jobs:
         uses: LykkeBusiness/.github/actions/inject-version-changelog@inject-version-changelog-v2
         with:
           version: ${{ env.TAG_NUMBERS }}
-      
+
       - name: Update .csproj files with new version
         uses: LykkeBusiness/.github/actions/update-version-csproj@update-version-csproj-v1
         with:
           version: ${{ env.TAG_NUMBERS }}
-          
+
       # Tags the current commit with the new version
       - name: Tag version
         run: |
@@ -62,7 +62,7 @@ jobs:
           git tag -fa ${{ github.event.inputs.version }} -m "${{ github.event.inputs.version }}"
           git push origin --tags
           git push origin ${{ github.ref }}
-      
+
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v4
 
@@ -88,7 +88,7 @@ jobs:
           auto_name_release: true
           release_name: ${{ github.event.inputs.release_name }}
           version: ${{ env.TAG_NUMBERS }}
-        
+
       # Creates a GitHub release with the release name and release notes from CHANGELOG.md
       - name: Create GitHub Release
         if: ${{ github.event.inputs.create_release == 'true' }}
@@ -101,6 +101,6 @@ jobs:
           body_path: ${{ env.RELEASE_NOTES_FILE }}
           draft: false
           prerelease: false
-          
+
       - name: Clean up temporary files
         run: rm -f ${{ env.RELEASE_NOTES_FILE }}
