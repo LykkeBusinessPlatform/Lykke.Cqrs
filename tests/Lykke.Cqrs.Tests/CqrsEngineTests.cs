@@ -12,6 +12,7 @@ using Lykke.Cqrs.Configuration;
 using Lykke.Logs;
 using Moq;
 using NUnit.Framework;
+using System.Threading.Tasks;
 
 namespace Lykke.Cqrs.Tests
 {
@@ -29,7 +30,7 @@ namespace Lykke.Cqrs.Tests
         {
             _logFactory?.Dispose();
         }
-        
+
         [SetUp]
         public void Setup()
         {
@@ -37,37 +38,34 @@ namespace Lykke.Cqrs.Tests
         }
 
         [Test]
-        public void ListenSameCommandOnDifferentEndpointsTest()
+        public async Task ListenSameCommandOnDifferentEndpointsTest()
         {
             var commandHandler = new CommandsHandler();
 
-            using (var messagingEngine = new MessagingEngine(
+            using var messagingEngine = new MessagingEngine(
                 _logFactory,
                 new TransportResolver(new Dictionary<string, TransportInfo>
                     {
                         {"InMemory", new TransportInfo("none", "none", "none", null, "InMemory")}
-                    })))
-            {
-                using (var engine = new InMemoryCqrsEngine(
-                    _logFactory,
+                    }));
+            using var engine = new InMemoryCqrsEngine(
+                _logFactory,
                     messagingEngine,
-                        Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
-                        Register.BoundedContext("bc")
-                           .PublishingEvents(typeof(int)).With("eventExchange")
-                           .ListeningCommands(typeof(string)).On("exchange1")
-                           .ListeningCommands(typeof(string)).On("exchange2")
-                           .WithCommandsHandler(commandHandler)))
-                {
-                    engine.StartPublishers();
-                    engine.StartSubscribers();
-                    messagingEngine.Send("test1", new Endpoint("InMemory", "exchange1", serializationFormat: SerializationFormat.Json));
-                    messagingEngine.Send("test2", new Endpoint("InMemory", "exchange2", serializationFormat: SerializationFormat.Json));
-                    messagingEngine.Send("test3", new Endpoint("InMemory", "exchange3", serializationFormat: SerializationFormat.Json));
-                    Thread.Sleep(10000);
+                    Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
+                    Register.BoundedContext("bc")
+                       .PublishingEvents(typeof(int)).With("eventExchange")
+                       .ListeningCommands(typeof(string)).On("exchange1")
+                       .ListeningCommands(typeof(string)).On("exchange2")
+                       .WithCommandsHandler(commandHandler));
 
-                    Assert.That(commandHandler.HandledCommands, Is.EquivalentTo(new[] { "test1", "test2" }));
-                }
-            }
+            engine.StartPublishers();
+            engine.StartSubscribers();
+            messagingEngine.Send("test1", new Endpoint("InMemory", "exchange1", serializationFormat: SerializationFormat.Json));
+            messagingEngine.Send("test2", new Endpoint("InMemory", "exchange2", serializationFormat: SerializationFormat.Json));
+            messagingEngine.Send("test3", new Endpoint("InMemory", "exchange3", serializationFormat: SerializationFormat.Json));
+            await Task.Delay(10000);
+
+            Assert.That(commandHandler.HandledCommands, Is.EquivalentTo(new[] { "test1", "test2" }));
         }
 
         [Test]
