@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 namespace Lykke.Cqrs.Tests
 {
     [TestFixture]
+    [NonParallelizable]
     internal class CqrsEngineTests
     {
         private readonly ILogFactory _logFactory;
