@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 namespace Lykke.Cqrs.Tests
 {
     [TestFixture]
-    [NonParallelizable]
     internal class CqrsEngineTests
     {
         private readonly ILogFactory _logFactory;
@@ -43,28 +42,26 @@ namespace Lykke.Cqrs.Tests
         {
             var commandHandler = new CommandsHandler();
 
-            using var messagingEngine = new MessagingEngine(
-                _logFactory,
-                new TransportResolver(new Dictionary<string, TransportInfo>
-                    {
-                        {"InMemory", new TransportInfo("none", "none", "none", null, "InMemory")}
-                    }));
             using var engine = new InMemoryCqrsEngine(
                 _logFactory,
-                    messagingEngine,
                     Register.DefaultEndpointResolver(new InMemoryEndpointResolver()),
-                    Register.BoundedContext("bc")
-                       .PublishingEvents(typeof(int)).With("eventExchange")
-                       .ListeningCommands(typeof(string)).On("exchange1")
-                       .ListeningCommands(typeof(string)).On("exchange2")
-                       .WithCommandsHandler(commandHandler));
+                    Register.BoundedContext("bcA")
+                        .PublishingCommands(typeof(string)).To("bcB").With("routeB")
+                        .PublishingCommands(typeof(string)).To("bcC").With("routeC")
+                        .PublishingCommands(typeof(string)).To("bcD").With("routeD"),
+                    Register.BoundedContext("bcB")
+                        .ListeningCommands(typeof(string)).On("routeB")
+                        .WithCommandsHandler(commandHandler),
+                    Register.BoundedContext("bcC")
+                        .ListeningCommands(typeof(string)).On("routeC")
+                        .WithCommandsHandler(commandHandler));
 
             engine.StartPublishers();
             engine.StartSubscribers();
-            messagingEngine.Send("test1", new Endpoint("InMemory", "exchange1", serializationFormat: SerializationFormat.Json));
-            messagingEngine.Send("test2", new Endpoint("InMemory", "exchange2", serializationFormat: SerializationFormat.Json));
-            messagingEngine.Send("test3", new Endpoint("InMemory", "exchange3", serializationFormat: SerializationFormat.Json));
-            await Task.Delay(10000);
+            engine.SendCommand("test1", "bcA", "bcB");
+            engine.SendCommand("test2", "bcA", "bcC");
+            engine.SendCommand("test3", "bcA", "bcD");
+            await Task.Delay(1000);
 
             Assert.That(commandHandler.HandledCommands, Is.EquivalentTo(new[] { "test1", "test2" }));
         }
