@@ -1,4 +1,4 @@
-## [[tbd]] ([[date]])
+## 16.0.1 (2024-10-23)
 
 ### Fixed
 - Loading MessagePack types in runtime
