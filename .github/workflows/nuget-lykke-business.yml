@@ -36,18 +36,18 @@ jobs:
           git clone -v https://${{ secrets.BITBUCKET_USER }}:${{ secrets.BITBUCKET_PASSWORD }}@bitbucket.org/lykke-snow/lykke.snow.deployment.git lykke.snow.deployment
 
       - name: Parse version number
-        uses: LykkeBusiness/.github/actions/parse-version@parse-version-v1
+        uses: LykkeBusiness/.github/actions/parse-version@master
         with:
           version: ${{ github.event.inputs.version }}
 
       - name: Inject new version into changelog file
         if: ${{ github.event.inputs.update_changelog == 'true' }}
-        uses: LykkeBusiness/.github/actions/inject-version-changelog@inject-version-changelog-v2
+        uses: LykkeBusiness/.github/actions/inject-version-changelog@master
         with:
           version: ${{ env.TAG_NUMBERS }}
 
       - name: Update .csproj files with new version
-        uses: LykkeBusiness/.github/actions/update-version-csproj@update-version-csproj-v1
+        uses: LykkeBusiness/.github/actions/update-version-csproj@master
         with:
           version: ${{ env.TAG_NUMBERS }}
 
@@ -83,7 +83,7 @@ jobs:
 
       - name: Extract release notes from changelog file
         if: ${{ github.event.inputs.create_release == 'true' }}
-        uses: LykkeBusiness/.github/actions/extract-notes-changelog@extract-notes-changelog-v1
+        uses: LykkeBusiness/.github/actions/extract-notes-changelog@master
         with:
           auto_name_release: true
           release_name: ${{ github.event.inputs.release_name }}
