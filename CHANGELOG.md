@@ -1,4 +1,4 @@
-## 16.0.0 (2024-10-23)
+## [[tbd]] ([[date]])
 
 ### Changed
 - Migrate to MessagePack 2.x
