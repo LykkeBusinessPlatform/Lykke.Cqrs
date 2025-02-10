@@ -1,0 +1,50 @@
+name: Publish NuGet Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: 'Version number (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+      create_release:
+        type: boolean
+        description: 'Create a GitHub release'
+        required: true
+        default: true
+      update_changelog:
+        type: boolean
+        description: 'Update CHANGELOG.md'
+        required: true
+        default: true
+      release_name:
+        type: string
+        description: 'Release name. If empty, will be extracted from CHANGELOG.md or default value [Release ${VERSION}] will be used'
+        required: false
+      excluded_vulnerable_packages:
+        type: string
+        description: 'Comma-separated list of packages to exclude from vulnerability check'
+        required: false
+        default: ''
+      excluded_deprecated_packages:
+        type: string
+        description: 'Comma-separated list of packages to exclude from deprecated check'
+        required: false
+        default: ''
+jobs:
+  publish-nuget:
+    name: Publish Nuget Package
+    uses: LykkeBusiness/.github/.github/workflows/publish-nuget-package.yml@master
+    with:
+      version: ${{ github.event.inputs.version }}
+      create_release: ${{ github.event.inputs.create_release }}
+      update_changelog: ${{ github.event.inputs.update_changelog }}
+      release_name: ${{ github.event.inputs.release_name }}
+      excluded_vulnerable_packages: ${{ github.event.inputs.excluded_vulnerable_packages }}
+      excluded_deprecated_packages: ${{ github.event.inputs.excluded_deprecated_packages }}
+      path: '.'
+      nuget-project-path: './src/Lykke.Cqrs'
+      changelog_path: '.'
+    secrets:
+      inherit
